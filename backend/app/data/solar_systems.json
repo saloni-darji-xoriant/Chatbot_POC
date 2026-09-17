@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ss-001",
+    "topic": "qpeak_panel",
+    "title": "Q.PEAK DUO BLK ML-G10+ Panel Specifications",
+    "category": "Solar System",
+    "keywords": ["q.peak", "qpeak", "panel spec", "module spec", "wattage", "panel datasheet", "monocrystalline"],
+    "answer": "The Q.PEAK DUO BLK ML-G10+ is Qcells' residential monocrystalline panel: 400W nominal output, 20.6% module efficiency, 108 half-cut Q.ANTUM DUO Z cells, dimensions 1722 x 1134 x 30mm, weight approximately 20.5kg. Operating temperature range is -40C to +85C, with a temperature coefficient of -0.34%/C. It carries a 25-year product warranty and a 25-year linear performance warranty guaranteeing at least 86% of rated output in year 25.",
+    "citations": [
+      { "label": "Q.PEAK DUO BLK ML-G10+ Datasheet", "document": "QPEAK-DUO-BLK-Datasheet.pdf", "section": "Electrical & Mechanical Specs" }
+    ],
+    "quick_replies": ["What's the difference vs Q.TRON?", "What's the panel warranty?"]
+  },
+  {
+    "id": "ss-002",
+    "topic": "qtron_panel",
+    "title": "Q.TRON BLK-G2+ Panel Specifications",
+    "category": "Solar System",
+    "keywords": ["q.tron", "qtron", "panel spec", "module spec", "zero gap", "hail resistance"],
+    "answer": "The Q.TRON BLK-G2+ is Qcells' next-generation panel using Q.ANTUM NEO technology: 415W nominal output, 21.4% module efficiency, and Zero Gap cell layout for improved low-light performance. It's rated for higher hail resistance (25mm ice ball impact tested) and carries the same 25-year product and performance warranty structure as the Q.PEAK line. Recommended for installations prioritizing maximum wattage per roof area.",
+    "citations": [
+      { "label": "Q.TRON BLK-G2+ Datasheet", "document": "QTRON-BLK-Datasheet.pdf", "section": "Electrical & Mechanical Specs" }
+    ],
+    "quick_replies": ["Is Q.TRON compatible with existing Q.PEAK strings?", "What's the hail warranty coverage?"]
+  },
+  {
+    "id": "ss-003",
+    "topic": "qhome_battery",
+    "title": "Q.HOME ESS HYB-G3 Battery Specifications",
+    "category": "Solar System",
+    "keywords": ["q.home", "ess", "battery capacity", "battery spec", "storage capacity", "kwh", "lfp", "backup power"],
+    "answer": "The Q.HOME ESS HYB-G3 is a modular LFP (lithium iron phosphate) battery system: each module provides 5kWh usable capacity and up to 4 modules can be stacked for 20kWh total. Round-trip efficiency is approximately 95%. It supports whole-home or partial-home backup depending on the transfer switch configuration, and carries a 10-year warranty guaranteeing at least 70% capacity retention at end of term. Pairs natively with the Q.VOLT hybrid inverter.",
+    "citations": [
+      { "label": "Q.HOME ESS HYB-G3 Datasheet", "document": "QHOME-ESS-Datasheet.pdf", "section": "Capacity & Performance" }
+    ],
+    "quick_replies": ["Battery won't charge past 20%", "What are the installation clearance requirements?"]
+  },
+  {
+    "id": "ss-004",
+    "topic": "qvolt_hybrid_inverter",
+    "title": "Q.VOLT HYB-G1 Hybrid Inverter Specifications",
+    "category": "Solar System",
+    "keywords": ["q.volt", "qvolt", "hybrid inverter", "inverter spec", "inverter datasheet"],
+    "answer": "The Q.VOLT HYB-G1 hybrid inverter is available in 5kW-10kW capacities and is designed to pair with Q.HOME ESS batteries for backup power. It includes built-in rapid shutdown compliance (NEC 2020/2023 690.12), integrated Wi-Fi for Q.OMMAND monitoring, and a peak efficiency of 97.5%. Standard warranty is 12 years, extendable to 20 or 25 years with product registration within 6 months of commissioning.",
+    "citations": [
+      { "label": "Q.VOLT HYB-G1 Datasheet", "document": "QVOLT-HYB-Datasheet.pdf", "section": "Specifications" }
+    ],
+    "quick_replies": ["How do I extend the warranty?", "What error codes should I know?"]
+  },
+  {
+    "id": "ss-005",
+    "topic": "qvolt_string_inverter",
+    "title": "Q.VOLT String Inverter (Grid-Tie Only)",
+    "category": "Solar System",
+    "keywords": ["q.volt string", "string inverter", "grid-tie", "non-hybrid inverter"],
+    "answer": "For grid-tie-only installations without battery storage, the Q.VOLT string inverter line covers 3kW-11.4kW capacities. It shares the same monitoring platform (Q.OMMAND) and warranty structure as the hybrid model (12-year standard, extendable to 20/25 years), but does not support battery integration — a system needing backup power later would require swapping to the HYB-G1 hybrid model, not just adding a battery.",
+    "citations": [
+      { "label": "Q.VOLT String Inverter Datasheet", "document": "QVOLT-String-Datasheet.pdf", "section": "Specifications" }
+    ],
+    "quick_replies": ["Can I add a battery to an existing string inverter system?", "What's the efficiency rating?"]
+  },
+  {
+    "id": "ss-006",
+    "topic": "racking_mounting",
+    "title": "Racking & Mounting System Compatibility",
+    "category": "Solar System",
+    "keywords": ["racking", "mounting system", "rail", "roof type", "ballasted", "tile roof", "metal roof"],
+    "answer": "Qcells panels are compatible with standard rail-based racking systems (IronRidge and Unirac-certified rail profiles) across comp shingle, tile, standing-seam metal, and flat/ballasted commercial roof types. Rail spacing and cantilever limits vary by wind/snow load zone — always confirm against the structural engineering letter for the specific site rather than using a default span table.",
+    "citations": [
+      { "label": "Residential Install Guide S2", "document": "Residential-Install-Guide.pdf", "section": "2. Racking Compatibility" }
+    ],
+    "quick_replies": ["What torque spec for racking bolts?", "Is a structural letter required for tile roofs?"]
+  },
+  {
+    "id": "ss-007",
+    "topic": "qommand_platform",
+    "title": "Q.OMMAND Monitoring Platform Overview",
+    "category": "Solar System",
+    "keywords": ["q.ommand", "monitoring platform", "monitoring app", "production tracking", "alerts"],
+    "answer": "Q.OMMAND is Qcells' monitoring platform, available as a mobile app and web portal. It provides real-time and historical production data, per-string (and per-panel if optimizers are installed) performance breakdowns, automatic underperformance alerts, and remote firmware management for inverters and batteries. Installers get a separate fleet-management view across all their commissioned sites, distinct from the homeowner-facing app.",
+    "citations": [
+      { "label": "Q.OMMAND Portal FAQ", "document": "QOMMAND-Portal-FAQ.md", "section": "Platform Overview" }
+    ],
+    "quick_replies": ["I can't log in to the monitoring portal", "How do I set up underperformance alerts?"]
+  },
+  {
+    "id": "ss-008",
+    "topic": "system_sizing",
+    "title": "System Sizing & Net Metering Basics",
+    "category": "Solar System",
+    "keywords": ["system sizing", "net metering", "interconnection", "offset usage", "kwh usage"],
+    "answer": "Standard residential sizing targets 90-110% of the homeowner's annual usage offset, adjusted for roof orientation, shading, and any planned electrification (EV, heat pump) increasing future usage. Net metering policy and interconnection agreement timelines vary significantly by state and utility — some utilities offer full retail-rate net metering, others use avoided-cost or time-of-use export rates, which materially changes the optimal system size and whether battery storage improves payback.",
+    "citations": [
+      { "label": "System Sizing & Interconnection Guide", "document": "Permitting-Interconnection-Guide.md", "section": "Sizing Methodology" }
+    ],
+    "quick_replies": ["How long does interconnection approval take?", "Does adding a battery change the sizing?"]
+  }
+]

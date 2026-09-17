@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Qcells Gradient theme tokens (design-tokens.json -> colors.raw) */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f5f8fc;
+  --text: #101b36;
+  --text-dim: #66708c;
+  --border: #e7ebf3;
+  --accent: #1e6feb;
+  --accent-ink: #ffffff;
+  --accent-soft: #1e6feb12;
+  --accent-2: #22c3a6;
+  --accent-2-soft: #22c3a61a;
+  --danger: #d0413b;
+  --danger-soft: #d0413b14;
+
+  --font-display: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.brand-gradient-text {
+  background-image: linear-gradient(120deg, #22c3a6, #1e6feb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}

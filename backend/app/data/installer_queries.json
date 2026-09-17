@@ -1,0 +1,148 @@
+[
+  {
+    "id": "iq-001",
+    "topic": "inverter_fault",
+    "title": "Inverter Fault Codes & Power Cycling",
+    "category": "Installer FAQ",
+    "keywords": ["inverter", "error", "code", "fault", "e01", "e02", "e03", "shutting down", "shuts off"],
+    "answer": "Most Q.VOLT inverter fault codes clear after a full power cycle: switch off the AC disconnect, wait 60 seconds, then switch off the DC disconnect for another 60 seconds before restoring both (AC first, then DC). If the same code returns within 10 minutes, treat it as hardware-related — log the exact code, the inverter serial number, and a timestamp, then escalate to L2 rather than repeating the cycle.",
+    "citations": [
+      { "label": "Q.VOLT Inverter Manual S4.2", "document": "QVOLT-Inverter-Manual.pdf", "section": "4.2 Fault Codes & Recovery" },
+      { "label": "Inverter Troubleshooting Guide", "document": "Inverter-Troubleshooting.md", "section": "Power Cycle Procedure" }
+    ],
+    "quick_replies": ["The fault code came back", "What does error code E04 mean?"]
+  },
+  {
+    "id": "iq-002",
+    "topic": "panel_output",
+    "title": "Diagnosing Low Panel Output",
+    "category": "Installer FAQ",
+    "keywords": ["panel", "not producing", "no power", "output", "underperform", "production", "low output"],
+    "answer": "Low or zero panel production is usually shading, a tripped rapid shutdown device, or a soiled/damaged panel. Confirm the rapid shutdown switch is engaged, check the Q.OMMAND monitoring portal for per-panel or per-string output, and inspect for debris, shading, or visible micro-cracks on the affected string before scheduling a truck roll. If one specific panel reads consistently near zero while neighbors are normal, suspect a failed panel or a loose MC4 connector rather than shading.",
+    "citations": [
+      { "label": "Q.TRON Performance Guide S2", "document": "QTRON-Performance-Guide.pdf", "section": "2. Diagnosing Low Output" }
+    ],
+    "quick_replies": ["Show me the monitoring portal steps", "How do I request an IV curve trace?"]
+  },
+  {
+    "id": "iq-003",
+    "topic": "monitoring_portal",
+    "title": "Monitoring Portal Sign-In & Lockouts",
+    "category": "Installer FAQ",
+    "keywords": ["monitoring", "portal", "app", "login", "password", "sign in", "account locked", "q.ommand"],
+    "answer": "For Q.OMMAND monitoring portal sign-in issues, use 'Forgot password' on the login screen — reset links expire after 30 minutes. If the account shows as locked after 5 failed attempts, it auto-unlocks after 15 minutes, or an admin can unlock it immediately from Admin > Users. If the system itself shows 'offline' rather than the login failing, check the site's Wi-Fi/router first — a router firmware update or SSID change is the most common cause.",
+    "citations": [
+      { "label": "Q.OMMAND Portal FAQ", "document": "QOMMAND-Portal-FAQ.md", "section": "Sign-in & Lockouts" }
+    ],
+    "quick_replies": ["I'm still locked out", "How do I add a new user?"]
+  },
+  {
+    "id": "iq-004",
+    "topic": "warranty",
+    "title": "Filing a Warranty Claim",
+    "category": "Installer FAQ",
+    "keywords": ["warranty", "claim", "rma", "replacement", "defective"],
+    "answer": "To file a warranty claim, gather the panel/inverter/battery serial number, proof of installation date, and a description of the defect (photos where possible), then submit through the Installer Portal under Warranty > New Claim. Qcells panels carry a 25-year product and performance warranty; Q.VOLT inverters carry a 12-year standard warranty (extendable to 20 years with product registration); Q.HOME ESS batteries carry a 10-year warranty. Damage from unauthorized third-party work (e.g. pressure-washing) is excluded from workmanship coverage.",
+    "citations": [
+      { "label": "Qcells Limited Warranty Terms", "document": "Qcells-Warranty-Terms.pdf", "section": "Section 3: Claims Process" }
+    ],
+    "quick_replies": ["Where do I find the serial number?", "What's covered under warranty?"]
+  },
+  {
+    "id": "iq-005",
+    "topic": "firmware",
+    "title": "Pushing Inverter Firmware Updates",
+    "category": "Installer FAQ",
+    "keywords": ["firmware", "update", "upgrade", "stuck"],
+    "answer": "Q.VOLT firmware updates are pushed automatically over the network connection when the unit is online. To force a check, go to the Q.OMMAND portal, select the device, and choose 'Check for updates'. Do not power-cycle the inverter while an update is in progress — if a push appears stuck for more than 30 minutes, it likely means the connection dropped mid-transfer; power cycle once, then re-trigger the push from the portal.",
+    "citations": [
+      { "label": "Firmware Update Guide", "document": "Firmware-Update-Guide.md", "section": "Manual Update Trigger" }
+    ],
+    "quick_replies": ["The update is stuck", "Escalate to L2"]
+  },
+  {
+    "id": "iq-006",
+    "topic": "installation",
+    "title": "Standard Residential Installation Sequence",
+    "category": "Installer FAQ",
+    "keywords": ["installation", "install", "mounting", "racking", "setup guide", "commissioning"],
+    "answer": "Standard residential installation follows: site survey -> racking layout per structural plan -> module mounting -> DC wiring and rapid shutdown -> inverter install and AC tie-in -> commissioning checklist in the Installer App -> final walkthrough with the homeowner. The full step-by-step guide includes torque specs, grounding requirements, and the commissioning checklist that must be completed before the system is registered in Q.OMMAND.",
+    "citations": [
+      { "label": "Residential Install Guide S1-6", "document": "Residential-Install-Guide.pdf", "section": "Sections 1-6" }
+    ],
+    "quick_replies": ["Show torque specs", "Show grounding requirements"]
+  },
+  {
+    "id": "iq-007",
+    "topic": "rapid_shutdown",
+    "title": "Rapid Shutdown (RSD) Requirements",
+    "category": "Installer FAQ",
+    "keywords": ["rapid shutdown", "rsd", "nec", "shutdown device", "initiation test", "arc fault"],
+    "answer": "NEC 2020/2023 690.12 requires rapid shutdown to bring conductors outside the array boundary to 30V/240VA within 30 seconds, and array-boundary conductors to 80V within 30 seconds, once initiated. Q.VOLT inverters have RSD built in when paired with Qcells-approved module-level shutdown devices. During commissioning, always run the RSD initiation test at the disconnect switch and confirm voltage drops within spec using a meter at the array before signing off — a failed test is almost always a loose transmitter wire at the combiner box or a device that wasn't fully seated behind the module.",
+    "citations": [
+      { "label": "Residential Install Guide S4", "document": "Residential-Install-Guide.pdf", "section": "4. Rapid Shutdown Compliance" },
+      { "label": "NEC 690.12 Compliance Notes", "document": "NEC690-Compliance-Notes.md", "section": "Rapid Shutdown" }
+    ],
+    "quick_replies": ["RSD test is failing", "Where do I mount the RSD transmitter?"]
+  },
+  {
+    "id": "iq-008",
+    "topic": "battery_safety",
+    "title": "Q.HOME ESS Installation Safety & Clearances",
+    "category": "Installer FAQ",
+    "keywords": ["clearance", "ventilation", "fire code", "non-combustible", "habitable room", "fire barrier"],
+    "answer": "Q.HOME ESS units require a minimum 3-inch clearance on all sides for ventilation, must be installed on a non-combustible surface or with an approved fire barrier per local fire code, and cannot be installed in a habitable room, garage-adjacent to a vehicle path, or directly beneath egress windows in most jurisdictions — always confirm local AHJ (Authority Having Jurisdiction) rules before final placement. Battery commissioning requires the BMS (Battery Management System) firmware to be at the latest version before first charge cycle.",
+    "citations": [
+      { "label": "Q.HOME ESS Install Guide S3", "document": "QHOME-ESS-Install-Guide.pdf", "section": "3. Siting & Clearances" }
+    ],
+    "quick_replies": ["Battery won't charge past 20%", "What's the warranty on Q.HOME ESS?"]
+  },
+  {
+    "id": "iq-009",
+    "topic": "permits_inspection",
+    "title": "Permit & Inspection Documentation Checklist",
+    "category": "Installer FAQ",
+    "keywords": ["permit", "inspection", "documentation", "ahj", "interconnection agreement", "utility approval"],
+    "answer": "Standard permit packages need: the structural/electrical plan set, equipment spec sheets (panel, inverter, and battery if applicable), a single-line diagram, and the rapid shutdown compliance note. After passing inspection, submit the interconnection agreement and inspection sign-off to the utility — most utilities issue Permission to Operate (PTO) within 5-15 business days, though this varies by jurisdiction. Keep a copy of the commissioning report; it's required for warranty claims later.",
+    "citations": [
+      { "label": "Permitting & Interconnection Guide", "document": "Permitting-Interconnection-Guide.md", "section": "Standard Package Checklist" }
+    ],
+    "quick_replies": ["How long does PTO usually take?", "What if the utility rejects the interconnection agreement?"]
+  },
+  {
+    "id": "iq-010",
+    "topic": "error_code_reference",
+    "title": "Q.VOLT Inverter Error Code Reference",
+    "category": "Installer FAQ",
+    "keywords": ["error code", "e04", "e05", "e06", "arc fault detected", "grid fault", "isolation fault", "overtemperature"],
+    "answer": "Quick reference for common Q.VOLT codes: E01/E02 = internal communication fault (power cycle first); E03 = Grid Fault, utility voltage/frequency outside anti-islanding threshold (verify with utility before adjusting settings — requires L2 access); E04 = DC Arc Fault Detected, de-energize and inspect DC wiring for damage (rodent damage is a common cause) before re-energizing; E05 = Isolation Fault, usually moisture ingress in a connector; E06 = Overtemperature, check ventilation clearance around the unit.",
+    "citations": [
+      { "label": "Q.VOLT Inverter Manual S4.3", "document": "QVOLT-Inverter-Manual.pdf", "section": "4.3 Error Code Table" }
+    ],
+    "quick_replies": ["My inverter shows E04", "My inverter shows E03 Grid Fault"]
+  },
+  {
+    "id": "iq-011",
+    "topic": "grounding_bonding",
+    "title": "Grounding & Bonding Requirements",
+    "category": "Installer FAQ",
+    "keywords": ["grounding", "bonding", "ground fault", "equipment grounding conductor", "wire gauge"],
+    "answer": "Every module frame must be bonded to the racking system using listed bonding hardware (WEEB or equivalent), with a continuous equipment grounding conductor run back to the inverter's ground bus — do not rely on rail-to-rail bonding alone without a listed splice. Torque bonding hardware to the manufacturer's spec (typically 90-120 in-lbs for standard WEEB washers); under-torqued bonding is one of the most common causes of failed inspections and intermittent ground fault trips.",
+    "citations": [
+      { "label": "Residential Install Guide S5", "document": "Residential-Install-Guide.pdf", "section": "5. Grounding & Bonding" }
+    ],
+    "quick_replies": ["Inverter shows a ground fault", "What torque spec for racking bolts?"]
+  },
+  {
+    "id": "iq-012",
+    "topic": "escalation_process",
+    "title": "When and How to Escalate to L2",
+    "category": "Installer FAQ",
+    "keywords": ["escalate", "escalation", "l2", "specialist", "level 2 support", "advanced support"],
+    "answer": "Escalate to L2 when: a fault code persists after a full power cycle, the issue requires changing grid-protection or BMS settings that installers can't access, the case involves a suspected safety hazard (burning smell, visible arcing, damaged wiring), or a warranty claim needs engineering review. Always include the serial number, exact error code and timestamp, and any troubleshooting steps already tried — this is the single biggest factor in how fast L2 can resolve a case.",
+    "citations": [
+      { "label": "L1/L2 Escalation Playbook", "document": "L1-L2-Escalation-Playbook.md", "section": "Escalation Criteria" }
+    ],
+    "quick_replies": ["My inverter fault came back after power cycling", "I smell something burning near the inverter"]
+  }
+]
