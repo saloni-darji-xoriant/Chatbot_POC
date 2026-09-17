@@ -27,8 +27,13 @@ function ChatPageInner() {
     liveTrace,
     handoffInfo,
     error,
+    pendingAttachments,
+    isUploadingAttachment,
+    attachmentError,
     loadConversation,
     sendMessage,
+    attachFile,
+    removeAttachment,
     voteOnMessage,
     submitRating,
     resetConversation,
@@ -82,7 +87,8 @@ function ChatPageInner() {
                     </h1>
                     <p className="max-w-md font-body text-md text-text-dim">
                       Ask about inverter faults, panel output, warranty claims, firmware, or
-                      installation steps — I&apos;ll answer from the Qcells knowledge base.
+                      installation steps — I&apos;ll answer from the Qcells knowledge base. You can
+                      also attach a site photo or document for me to reference.
                     </p>
                     <div className="flex flex-wrap justify-center gap-2.5">
                       {SUGGESTED_QUESTIONS.map((q) => (
@@ -133,7 +139,15 @@ function ChatPageInner() {
                       Mark as resolved
                     </button>
                   )}
-                  <Composer onSend={sendMessage} disabled={isSending} />
+                  <Composer
+                    onSend={sendMessage}
+                    disabled={isSending}
+                    attachments={pendingAttachments}
+                    isUploadingAttachment={isUploadingAttachment}
+                    attachmentError={attachmentError}
+                    onAttach={attachFile}
+                    onRemoveAttachment={removeAttachment}
+                  />
                 </div>
               </div>
             )}

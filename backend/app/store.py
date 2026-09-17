@@ -79,6 +79,8 @@ class Store:
                 return "Case Ticket"
             if "Datasheet" in filename:
                 return "Solar System"
+            if "Handbook" in filename or "Homeowners-Guide" in filename:
+                return "Reference Guide"
             return "Installer FAQ"
 
         seen_docs: set[str] = set()

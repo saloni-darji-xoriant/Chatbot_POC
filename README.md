@@ -34,7 +34,8 @@ Chatbot_POC/
 │   │       ├── knowledge_base.py   Loads app/data/*.json + admin corrections
 │   │       ├── knowledge_graph.py  Curated + auto-generated topic subgraphs
 │   │       ├── small_talk.py       Greeting/thanks/farewell detection (no handoff)
-│   │       └── chat_pipeline.py    Router -> Retrieval(RAG) -> Response -> Grounding agents
+│   │       ├── attachment_store.py In-memory (never on disk) per-conversation file store
+│   │       └── chat_pipeline.py    Router -> Retrieval(RAG) -> [Document Agent] -> Response -> Grounding
 │   ├── tests/                 Pytest API tests (incl. SSE stream + correction flow)
 │   ├── requirements.txt
 │   └── Dockerfile
@@ -211,6 +212,35 @@ queries, realistic for Qcells" as scoped in the chat request. If you have an act
 SOW with a specific schema or content list, share it and the JSON files above can be
 re-shaped to match exactly.
 
+## Attachments
+
+Click the paperclip in the composer to attach a document (`.txt` `.md` `.csv` `.json`
+`.log` `.pdf` `.docx`) or image (`.png` `.jpg` `.gif` `.webp` `.bmp`) to a question.
+
+- **Never written to disk / the project folder.** Files live only in the backend
+  process's memory ([`attachment_store.py`](backend/app/services/attachment_store.py)),
+  keyed by conversation — the same "session" unit the rest of the app already uses.
+  They're gone on backend restart, exactly like every other in-memory store here.
+- **Remembered for the whole conversation**, not just the message they were attached
+  to — upload a file once, then ask about it across several follow-up messages.
+- **Minimal latency by design:** text is extracted exactly once, synchronously, at
+  upload time (immediately when you pick the file, not when you hit send) — so
+  parsing a PDF/.docx never adds to the latency of actually asking your question.
+  Every subsequent question is just a cheap keyword-overlap scan over the
+  already-extracted string, the same lightweight technique the KB search uses. Hard
+  caps keep upload-time work bounded: 5MB per file, 8 attachments per conversation,
+  20,000 characters kept per file, first 15 pages read for PDFs.
+- **A new "Document Agent" pipeline step** cross-references your attachments the same
+  way the Retrieval Agent cross-references the knowledge base — visible in the
+  **Trace** panel. If an attachment answers a question the knowledge base can't, the
+  assistant answers from it directly instead of escalating to L2.
+- **Images get metadata only** (format, dimensions) — there's no OCR/vision model in
+  this POC, so an attached photo is remembered and shown in the thread, but its
+  visual content isn't analyzed. This is stated in the UI rather than pretending
+  otherwise; wiring in a real vision model would replace `_extract_text`'s image
+  branch in `attachment_store.py`.
+- API: `POST/GET /api/chat/conversations/{id}/attachments`, `DELETE .../{attachment_id}`.
+
 ## Design tokens
 
 The "Qcells Gradient" tokens (colors, typography, radii, shadows, component specs)
@@ -234,6 +264,8 @@ All endpoints are namespaced under `/api` and documented live in Swagger (`/docs
   `assistant_message` (with citations + its knowledge-graph subgraph), an optional
   `handoff` event, and a closing `done` event
 - `POST /api/chat/conversations/{id}/messages` — synchronous (non-streaming) variant of the same pipeline
+- `POST/GET /api/chat/conversations/{id}/attachments`, `DELETE .../{attachment_id}` — upload/list/remove
+  files for a conversation; see [Attachments](#attachments)
 - `POST /api/chat/conversations/{id}/handoff` — contact-card info for the handoff screen
 - `GET /api/chat/help-contacts` — the same contact list, for the standalone Help Center page
 - `POST /api/chat/messages/{id}/vote` — thumbs up/down (+ optional reason) on an assistant
@@ -268,6 +300,8 @@ Amplify domain.
 
 - **Auth** is a mock bearer token, not JWT/OAuth — replace before production.
 - **Data store** is in-memory and resets on backend restart — swap `app/store.py` for a real database.
+- **Attachments** are in-memory only (by design — see [Attachments](#attachments)), capped at
+  5MB/file and 8 files/conversation, and images get metadata only, no real OCR/vision analysis.
 - **Multi-agent RAG pipeline** (`app/services/chat_pipeline.py`) is a simulated 4-step
   pipeline (Router -> Retrieval/RAG -> Response -> Grounding) over **keyword** matching,
   not real LLM-backed agents or vector search — it exists to make the orchestration

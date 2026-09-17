@@ -1,4 +1,5 @@
 import type {
+  AttachmentSummary,
   Conversation,
   ConversationStatus,
   ConversationSummary,
@@ -73,7 +74,8 @@ async function streamMessage(
   token: string,
   conversationId: string,
   text: string,
-  handlers: StreamHandlers
+  handlers: StreamHandlers,
+  attachmentIds: string[] = []
 ): Promise<void> {
   let res: Response;
   try {
@@ -83,7 +85,7 @@ async function streamMessage(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, attachment_ids: attachmentIds }),
     });
   } catch {
     handlers.onError?.("Could not reach the assistant. Check your connection and try again.");
@@ -231,4 +233,35 @@ export const api = {
 
   getAdminConversation: (token: string, id: string) =>
     request<Conversation>(`/admin/conversations/${id}`, { token }),
+
+  uploadAttachment: async (token: string, conversationId: string, file: File): Promise<AttachmentSummary> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Deliberately not using request() — it always sets a JSON Content-Type,
+    // but multipart uploads need the browser to set their own boundary.
+    const res = await fetch(`${API_URL}/chat/conversations/${conversationId}/attachments`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        detail = (await res.json()).detail ?? detail;
+      } catch {
+        // ignore
+      }
+      throw new ApiError(res.status, detail);
+    }
+    return res.json() as Promise<AttachmentSummary>;
+  },
+
+  listAttachments: (token: string, conversationId: string) =>
+    request<AttachmentSummary[]>(`/chat/conversations/${conversationId}/attachments`, { token }),
+
+  deleteAttachment: (token: string, conversationId: string, attachmentId: string) =>
+    request<void>(`/chat/conversations/${conversationId}/attachments/${attachmentId}`, {
+      method: "DELETE",
+      token,
+    }),
 };

@@ -11,6 +11,7 @@ import {
 
 import { api } from "@/lib/api";
 import type {
+  AttachmentSummary,
   Conversation,
   ConversationStatus,
   HandoffInfo,
@@ -27,9 +28,14 @@ interface ChatContextValue {
   liveTrace: ProcessStep[] | null;
   handoffInfo: HandoffInfo | null;
   error: string | null;
+  pendingAttachments: AttachmentSummary[];
+  isUploadingAttachment: boolean;
+  attachmentError: string | null;
   startConversation: () => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
+  attachFile: (file: File) => Promise<void>;
+  removeAttachment: (id: string) => Promise<void>;
   voteOnMessage: (messageId: string, vote: VoteValue | null, reason?: string) => Promise<void>;
   submitRating: (stars: number, thumbs: VoteValue | null, comment: string) => Promise<void>;
   resetConversation: () => void;
@@ -44,6 +50,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [liveTrace, setLiveTrace] = useState<ProcessStep[] | null>(null);
   const [handoffInfo, setHandoffInfo] = useState<HandoffInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<AttachmentSummary[]>([]);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   const startConversation = useCallback(async () => {
     if (!token) return;
@@ -60,6 +69,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const conv = await api.getConversation(token, id);
       setConversation(conv);
       setHandoffInfo(null);
+      setPendingAttachments([]);
       if (conv.status === "handoff") {
         try {
           const info = await api.triggerHandoff(token, id);
@@ -72,15 +82,60 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     [token]
   );
 
+  /** Creates a conversation on first use — shared by sendMessage and
+   * attachFile, since a user can attach a file before typing anything. */
+  const ensureConversation = useCallback(async (): Promise<Conversation> => {
+    if (conversation) return conversation;
+    if (!token) throw new Error("Not authenticated");
+    const conv = await api.createConversation(token);
+    setConversation(conv);
+    return conv;
+  }, [token, conversation]);
+
+  const attachFile = useCallback(
+    async (file: File) => {
+      if (!token) return;
+      setAttachmentError(null);
+      setIsUploadingAttachment(true);
+      try {
+        const conv = await ensureConversation();
+        // Uploaded (and text-extracted) immediately on selection, well before
+        // the user hits send — so send-time latency is unaffected by file
+        // parsing, and the attachment is already searchable by the time
+        // they ask a question about it.
+        const summary = await api.uploadAttachment(token, conv.id, file);
+        setPendingAttachments((prev) => [...prev, summary]);
+      } catch (err) {
+        setAttachmentError(err instanceof Error ? err.message : "Could not attach that file");
+      } finally {
+        setIsUploadingAttachment(false);
+      }
+    },
+    [token, ensureConversation]
+  );
+
+  const removeAttachment = useCallback(
+    async (id: string) => {
+      if (!token || !conversation) return;
+      setPendingAttachments((prev) => prev.filter((a) => a.id !== id));
+      try {
+        await api.deleteAttachment(token, conversation.id, id);
+      } catch {
+        // already removed from the pending list client-side; a stale
+        // server-side record is harmless and self-limited by the per-
+        // conversation attachment cap
+      }
+    },
+    [token, conversation]
+  );
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (!token) return;
       setError(null);
-      let conv = conversation;
-      if (!conv) {
-        conv = await api.createConversation(token);
-        setConversation(conv);
-      }
+      const conv = await ensureConversation();
+      const attachmentsForMessage = pendingAttachments;
+
       const optimisticId = `temp_${Date.now()}`;
       const optimisticUser: Message = {
         id: optimisticId,
@@ -91,41 +146,49 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         citations: [],
         quick_replies: [],
         process_trace: [],
+        attachments: attachmentsForMessage,
         vote: null,
         is_grounded: true,
       };
       setConversation((prev) =>
         prev ? { ...prev, messages: [...prev.messages, optimisticUser] } : prev
       );
+      setPendingAttachments([]);
       setIsSending(true);
       setLiveTrace(null);
 
       const convId = conv.id;
-      await api.streamMessage(token, convId, text, {
-        onUserMessage: (real) => {
-          setConversation((prev) =>
-            prev
-              ? { ...prev, messages: prev.messages.map((m) => (m.id === optimisticId ? real : m)) }
-              : prev
-          );
+      await api.streamMessage(
+        token,
+        convId,
+        text,
+        {
+          onUserMessage: (real) => {
+            setConversation((prev) =>
+              prev
+                ? { ...prev, messages: prev.messages.map((m) => (m.id === optimisticId ? real : m)) }
+                : prev
+            );
+          },
+          onTrace: (steps) => setLiveTrace(steps),
+          onAssistantMessage: (assistantMsg) => {
+            setConversation((prev) =>
+              prev ? { ...prev, messages: [...prev.messages, assistantMsg] } : prev
+            );
+            setLiveTrace(null);
+          },
+          onHandoff: (info) => setHandoffInfo(info),
+          onDone: (nextStatus) => {
+            setConversation((prev) => (prev ? { ...prev, status: nextStatus } : prev));
+          },
+          onError: (message) => setError(message),
         },
-        onTrace: (steps) => setLiveTrace(steps),
-        onAssistantMessage: (assistantMsg) => {
-          setConversation((prev) =>
-            prev ? { ...prev, messages: [...prev.messages, assistantMsg] } : prev
-          );
-          setLiveTrace(null);
-        },
-        onHandoff: (info) => setHandoffInfo(info),
-        onDone: (nextStatus) => {
-          setConversation((prev) => (prev ? { ...prev, status: nextStatus } : prev));
-        },
-        onError: (message) => setError(message),
-      });
+        attachmentsForMessage.map((a) => a.id)
+      );
 
       setIsSending(false);
     },
-    [token, conversation]
+    [token, ensureConversation, pendingAttachments]
   );
 
   const voteOnMessage = useCallback(
@@ -159,6 +222,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setHandoffInfo(null);
     setError(null);
     setLiveTrace(null);
+    setPendingAttachments([]);
+    setAttachmentError(null);
   }, []);
 
   const value = useMemo<ChatContextValue>(
@@ -169,9 +234,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       liveTrace,
       handoffInfo,
       error,
+      pendingAttachments,
+      isUploadingAttachment,
+      attachmentError,
       startConversation,
       loadConversation,
       sendMessage,
+      attachFile,
+      removeAttachment,
       voteOnMessage,
       submitRating,
       resetConversation,
@@ -182,9 +252,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       liveTrace,
       handoffInfo,
       error,
+      pendingAttachments,
+      isUploadingAttachment,
+      attachmentError,
       startConversation,
       loadConversation,
       sendMessage,
+      attachFile,
+      removeAttachment,
       voteOnMessage,
       submitRating,
       resetConversation,

@@ -13,6 +13,7 @@ const baseMessage: Message = {
   citations: [{ id: "cit_1", label: "Fault Codes", document: "Inverter-Troubleshooting.md" }],
   quick_replies: ["The fault code came back"],
   process_trace: [],
+  attachments: [],
   vote: null,
   is_grounded: true,
 };
@@ -43,5 +44,27 @@ describe("MessageBubble", () => {
     render(<MessageBubble message={userMessage} />);
     expect(screen.getByText("My inverter shows E02")).toBeInTheDocument();
     expect(screen.queryByLabelText("Thumbs up")).not.toBeInTheDocument();
+  });
+
+  it("shows an attachment chip on a user message that has one", () => {
+    const userMessage: Message = {
+      ...baseMessage,
+      sender: "user",
+      text: "See the attached site survey",
+      attachments: [
+        {
+          id: "att_1",
+          conversation_id: "conv_1",
+          filename: "site-survey.pdf",
+          mime_type: "application/pdf",
+          kind: "document",
+          size_bytes: 12_345,
+          has_extracted_text: true,
+          uploaded_at: new Date().toISOString(),
+        },
+      ],
+    };
+    render(<MessageBubble message={userMessage} />);
+    expect(screen.getByText("site-survey.pdf")).toBeInTheDocument();
   });
 });

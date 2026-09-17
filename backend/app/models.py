@@ -106,6 +106,19 @@ class KnowledgeGraph(BaseModel):
     edges: list[KGEdge] = Field(default_factory=list)
 
 
+class AttachmentSummary(BaseModel):
+    id: str
+    conversation_id: str
+    filename: str
+    mime_type: str
+    kind: str  # "document" | "image"
+    size_bytes: int
+    has_extracted_text: bool
+    preview: Optional[str] = Field(default=None, description="First ~200 chars of extracted text, if any")
+    extraction_note: Optional[str] = None
+    uploaded_at: datetime
+
+
 class Message(BaseModel):
     id: str
     conversation_id: str
@@ -116,6 +129,7 @@ class Message(BaseModel):
     quick_replies: list[str] = Field(default_factory=list)
     process_trace: list[ProcessStep] = Field(default_factory=list)
     knowledge_graph: Optional[KnowledgeGraph] = None
+    attachments: list[AttachmentSummary] = Field(default_factory=list)
     vote: Optional[VoteValue] = None
     vote_reason: Optional[str] = None
     is_grounded: bool = True
@@ -144,6 +158,10 @@ class CreateConversationRequest(BaseModel):
 
 class SendMessageRequest(BaseModel):
     text: str = Field(..., min_length=1, description="The user's message text")
+    attachment_ids: list[str] = Field(
+        default_factory=list,
+        description="IDs of files uploaded via /attachments to tag as sent with this message",
+    )
 
 
 class SendMessageResponse(BaseModel):

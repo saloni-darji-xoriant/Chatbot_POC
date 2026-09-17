@@ -1,0 +1,87 @@
+[
+  {
+    "id": "rg-001",
+    "topic": "spv_system_components_reference",
+    "title": "Solar PV System Components: Cell, Module, Panel, Array",
+    "category": "Reference Guide",
+    "keywords": ["solar cell", "solar module", "solar array", "module", "array", "charge controller", "field junction box", "fjb"],
+    "answer": "A Solar Cell is the basic photovoltaic device that generates electricity from light. Cells wired together form a Module; modules fastened and interconnected together form a Panel; and panels mounted together on a support structure form an Array. In an off-grid or battery-backed system, the Charge Controller sits between the array and the battery bank, protecting the battery from overcharge and managing charging as it approaches full. The Field Junction Box (FJB) is where the incoming wiring from the panels and the outgoing wiring to the charge controller are terminated and interconnected.",
+    "citations": [
+      { "label": "CAMTECH Handbook on Installation & Maintenance of Solar Panel", "document": "Handbook-Solar-Panel-Install-Maintenance.pdf", "section": "Section I: 1.7-1.10 Components" }
+    ],
+    "quick_replies": ["What does a charge controller protect against?", "General solar panel maintenance cadence"]
+  },
+  {
+    "id": "rg-002",
+    "topic": "panel_siting_reference",
+    "title": "Panel Siting, Shading Clearance & Row Spacing Guidance",
+    "category": "Reference Guide",
+    "keywords": ["shading", "tree", "obstruction", "row spacing", "tilt angle", "panel spacing"],
+    "answer": "As a rule of thumb for avoiding shading from nearby obstructions: to the east or west of the array, clear distance should be more than double the obstruction's height; to the south, clear distance should be more than half the obstruction's height (in the northern hemisphere, where arrays typically face south). Row spacing for tilted arrays should increase with site latitude, since the sun sits lower in the sky at higher latitudes and casts longer shadows. Mounting should also keep the array high and clear enough that rainwater, leaves, and bird droppings don't accumulate, and the surface stays reachable for cleaning.",
+    "citations": [
+      { "label": "CAMTECH Handbook on Installation & Maintenance of Solar Panel", "document": "Handbook-Solar-Panel-Install-Maintenance.pdf", "section": "Section III: 3.3 Installation Guidelines" }
+    ],
+    "quick_replies": ["Is my roof orientation good for solar?", "How often should panels be cleaned?"]
+  },
+  {
+    "id": "rg-003",
+    "topic": "spv_maintenance_cadence_reference",
+    "title": "Routine Solar Panel Cleaning & Maintenance Cadence",
+    "category": "Reference Guide",
+    "keywords": ["how often", "clean", "cleaning schedule", "wipe panel", "self-cleaning", "maintenance cadence"],
+    "answer": "Solar panels need very little maintenance day-to-day — for most rooftop residential systems they're effectively self-cleaning with rain, needing only occasional light cleaning if dirt, leaves, or debris start blocking sunlight. For off-grid or ground-mounted systems in dustier environments, a more proactive cadence is common: wiping the panel surface with a wet rag roughly every two weeks, using water only (no cleaning agents, which can leave residue or damage anti-reflective coatings). Either way, the priority is keeping the panel surface free of anything that blocks direct sunlight — it's the light, not heat, that generates power, so shading or grime has an outsized effect on output.",
+    "citations": [
+      { "label": "CAMTECH Handbook on Installation & Maintenance of Solar Panel", "document": "Handbook-Solar-Panel-Install-Maintenance.pdf", "section": "Section IV: 4.1 Maintenance" },
+      { "label": "A Homeowner's Guide to Solar PV", "document": "Homeowners-Guide-To-Solar-PV.pdf", "section": "Operation and Maintenance" }
+    ],
+    "quick_replies": ["My panels look dirty, will that hurt output?", "General solar panel troubleshooting"]
+  },
+  {
+    "id": "rg-004",
+    "topic": "spv_troubleshooting_reference_table",
+    "title": "General Solar PV Troubleshooting Reference (Symptom -> Likely Cause -> Action)",
+    "category": "Reference Guide",
+    "keywords": ["no output current", "no charging indication", "charging indication", "front glass broken", "blocking diode", "diode failed", "corrosion", "dry solder", "loose connection"],
+    "answer": "Common symptom-to-cause mappings for a PV module/array: No charging indication is most often shading or dirt on the module (clear the obstruction or clean the panel) — or a broken/corroded cable, a dry solder joint, or a loose connection (repair or replace the cable/connection). Voltage reads normal but there's no output current usually points to internal cell or interconnection damage inside the module itself, which typically means replacement (check warranty status first). A broken module should be replaced outright rather than repaired. Front glass breakage is usually mishandling or transport damage and isn't field-repairable. On the blocking diode: no voltage across it suggests the diode has failed short; abnormally high voltage across it suggests it has failed open — either failure mode means replacing the diode.",
+    "citations": [
+      { "label": "CAMTECH Handbook on Installation & Maintenance of Solar Panel", "document": "Handbook-Solar-Panel-Install-Maintenance.pdf", "section": "Section IV: 4.2 Troubleshooting" }
+    ],
+    "quick_replies": ["My inverter shows a low-output fault", "Escalate to L2"]
+  },
+  {
+    "id": "rg-005",
+    "topic": "battery_storage_homeowner_reference",
+    "title": "Home Battery Storage & What Happens to Excess Solar Energy",
+    "category": "Reference Guide",
+    "keywords": ["should i add a battery", "is a battery worth it", "diverter switch", "excess solar energy", "east west facing panels", "grid shift battery"],
+    "answer": "A home battery stores solar energy your system generates but you don't use in the moment, then discharges it later (typically that evening) so more of your own solar production actually offsets your usage, rather than being exported. The tradeoffs: it adds cost to the system, and some energy is lost in each charge/discharge cycle. A simpler, lower-cost alternative some homeowners consider is a diverter switch, which routes unused solar power into a hot water immersion tank instead of a battery — you don't get stored electricity back, but you do get 'free' hot water from otherwise-exported energy. Separately, orientation affects when you generate: a south-facing array produces the most total energy over a year, while east- or west-facing arrays shift generation earlier or later in the day (more useful if that matches your usage pattern) at the cost of somewhat lower annual total output.",
+    "citations": [
+      { "label": "A Homeowner's Guide to Solar PV", "document": "Homeowners-Guide-To-Solar-PV.pdf", "section": "FAQ: Battery storage & orientation" }
+    ],
+    "quick_replies": ["What's the capacity of the Q.HOME ESS battery?", "Does solar work on cloudy days?"]
+  },
+  {
+    "id": "rg-006",
+    "topic": "cloudy_day_output_reference",
+    "title": "Does Solar Still Generate Power on Cloudy Days?",
+    "category": "Reference Guide",
+    "keywords": ["cloudy", "overcast", "generate power", "clear sky", "sunny day", "how much electricity"],
+    "answer": "Yes — solar PV systems generate electricity from daylight, not direct heat, so they keep producing on overcast days, just at a reduced fraction of their rated peak output rather than zero. As a rough sizing rule of thumb, about 1 square meter of typical silicon panel produces roughly 150W in full clear-sky sun; a home system of around 20 square meters (roughly 3kW) can generate on the order of 2,600 kWh per year in a moderate climate when well-sited, which is a substantial offset against typical household electricity use. Actual output always depends on hardware, system size, location, and how much shading or cloud cover the site sees.",
+    "citations": [
+      { "label": "A Homeowner's Guide to Solar PV", "document": "Homeowners-Guide-To-Solar-PV.pdf", "section": "FAQ: Solar panel output" }
+    ],
+    "quick_replies": ["Is my roof orientation good for solar?", "How is my system sized?"]
+  },
+  {
+    "id": "rg-007",
+    "topic": "choosing_installer_reference",
+    "title": "Questions Homeowners Should Ask When Choosing a Solar Installer",
+    "category": "Reference Guide",
+    "keywords": ["hiring", "questions", "vetting", "references", "written quotation", "choosing a solar company", "insurance"],
+    "answer": "Good practice for a homeowner vetting a solar installer: ask whether they're competent/certified to do the work and have done similar jobs before, whether their staff have completed relevant safety training, whether they carry insurance and can provide a safety statement, and whether they can provide references or examples of past work. On the commercial side, ask for a detailed written quotation covering total cost, expected annual generation, warranty terms, and exactly what is and isn't included (battery, monitoring system, permit/inspection fees, taxes) so there are no surprises later.",
+    "citations": [
+      { "label": "A Homeowner's Guide to Solar PV", "document": "Homeowners-Guide-To-Solar-PV.pdf", "section": "Health & Safety Competency Checklist" }
+    ],
+    "quick_replies": ["What's included in a standard installation quote?", "How do I file a warranty claim?"]
+  }
+]

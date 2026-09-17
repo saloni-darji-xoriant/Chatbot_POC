@@ -2,11 +2,12 @@ import asyncio
 import json
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import StreamingResponse
 
 from app.auth import get_current_user
 from app.models import (
+    AttachmentSummary,
     Conversation,
     ConversationStatus,
     ConversationSummary,
@@ -26,10 +27,8 @@ from app.models import (
     User,
     VoteRequest,
 )
-from app.services.chat_pipeline import build_chitchat_steps, build_process_steps, generate_assistant_reply
-from app.services.knowledge_base import search
-from app.services.knowledge_graph import get_graph
-from app.services.small_talk import classify_chitchat
+from app.services import attachment_store
+from app.services.chat_pipeline import build_steps_for, generate_assistant_reply, resolve_attachments
 from app.store import store
 from app.utils import new_id
 
@@ -92,6 +91,62 @@ def get_conversation(conversation_id: str, user: User = Depends(get_current_user
 
 
 @router.post(
+    "/conversations/{conversation_id}/attachments",
+    response_model=AttachmentSummary,
+    summary="Attach a document or image to the conversation",
+    description="The file is held only in server memory for this conversation "
+    "(never written to disk) and text is extracted once, immediately, so "
+    "later questions against it are a fast in-memory lookup rather than "
+    "re-parsing the file. Max 5MB per file, 8 attachments per conversation.",
+)
+async def upload_attachment(
+    conversation_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user)
+) -> AttachmentSummary:
+    conv = store.get_conversation(conversation_id)
+    if conv is None or conv.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
+
+    content = await file.read()
+    try:
+        record = attachment_store.add_attachment(
+            conversation_id, file.filename or "untitled", file.content_type or "application/octet-stream", content
+        )
+    except attachment_store.AttachmentTooLarge as exc:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, str(exc)) from exc
+    except attachment_store.AttachmentLimitReached as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+
+    return resolve_attachments([record.id])[0]
+
+
+@router.get(
+    "/conversations/{conversation_id}/attachments",
+    response_model=list[AttachmentSummary],
+    summary="List files attached to this conversation this session",
+)
+def list_attachments(conversation_id: str, user: User = Depends(get_current_user)) -> list[AttachmentSummary]:
+    conv = store.get_conversation(conversation_id)
+    if conv is None or conv.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
+    return resolve_attachments([a.id for a in attachment_store.get_for_conversation(conversation_id)])
+
+
+@router.delete(
+    "/conversations/{conversation_id}/attachments/{attachment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove an attachment before it's referenced by any message",
+)
+def delete_attachment(
+    conversation_id: str, attachment_id: str, user: User = Depends(get_current_user)
+) -> None:
+    conv = store.get_conversation(conversation_id)
+    if conv is None or conv.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
+    if not attachment_store.delete(conversation_id, attachment_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Attachment not found")
+
+
+@router.post(
     "/conversations/{conversation_id}/messages",
     response_model=SendMessageResponse,
     summary="Send a user message and get the assistant's grounded (or handoff) reply",
@@ -113,6 +168,7 @@ def send_message(
         sender=MessageSender.user,
         text=payload.text,
         created_at=datetime.utcnow(),
+        attachments=resolve_attachments(payload.attachment_ids),
     )
     store.add_message(conversation_id, user_message)
 
@@ -128,7 +184,7 @@ def send_message(
     )
 
 
-async def _stream_pipeline(conversation_id: str, text: str):
+async def _stream_pipeline(conversation_id: str, text: str, attachment_ids: list[str]):
     conv = store.get_conversation(conversation_id)
     if conv is None:
         yield _sse("error", {"message": "Conversation not found"})
@@ -141,19 +197,13 @@ async def _stream_pipeline(conversation_id: str, text: str):
         sender=MessageSender.user,
         text=text,
         created_at=datetime.utcnow(),
+        attachments=resolve_attachments(attachment_ids),
     )
     store.add_message(conversation_id, user_message)
     yield _sse("user_message", json.loads(user_message.model_dump_json()))
     await asyncio.sleep(0.15)
 
-    chitchat = classify_chitchat(text)
-    if chitchat is not None:
-        steps = build_chitchat_steps(chitchat)
-    else:
-        entry, _score = search(text)
-        matched = entry is not None
-        graph = get_graph(entry) if matched else None
-        steps = build_process_steps(matched, len(graph.nodes) if graph else 0)
+    steps = build_steps_for(conversation_id, text)
 
     # Reveal each agent's step progressively so the UI can show real,
     # backend-driven "thinking" progress instead of a client-side fake timer.
@@ -211,7 +261,7 @@ async def send_message_stream(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
 
     return StreamingResponse(
-        _stream_pipeline(conversation_id, payload.text),
+        _stream_pipeline(conversation_id, payload.text, payload.attachment_ids),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

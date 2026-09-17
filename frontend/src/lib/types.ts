@@ -44,6 +44,21 @@ export interface KnowledgeGraph {
   edges: KGEdge[];
 }
 
+export type AttachmentKind = "document" | "image";
+
+export interface AttachmentSummary {
+  id: string;
+  conversation_id: string;
+  filename: string;
+  mime_type: string;
+  kind: AttachmentKind;
+  size_bytes: number;
+  has_extracted_text: boolean;
+  preview?: string | null;
+  extraction_note?: string | null;
+  uploaded_at: string;
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -54,6 +69,7 @@ export interface Message {
   quick_replies: string[];
   process_trace: ProcessStep[];
   knowledge_graph?: KnowledgeGraph | null;
+  attachments: AttachmentSummary[];
   vote: VoteValue | null;
   vote_reason?: string | null;
   is_grounded: boolean;

@@ -1,12 +1,24 @@
 """The Hanwha Qcells L1 Assistant knowledge base.
 
-Content lives in `app/data/*.json` as three source categories — solar system
-product specs, historical support case tickets, and installer FAQ entries —
-matching the scope requested for this POC. In a real deployment this would be
-a vector-search / RAG service backed by a document store and a knowledge
-graph; here we do keyword matching over these same three categories so the
-app is fully runnable offline while keeping the response shape (answer +
-citations + topic + confidence) the multi-agent pipeline expects.
+Content lives in `app/data/*.json` as four source categories — solar system
+product specs, historical support case tickets, installer FAQ entries, and
+general reference guides distilled from real third-party solar PV
+documentation — matching the scope requested for this POC. In a real
+deployment this would be a vector-search / RAG service backed by a document
+store and a knowledge graph; here we do keyword matching over these same
+categories so the app is fully runnable offline while keeping the response
+shape (answer + citations + topic + confidence) the multi-agent pipeline
+expects.
+
+The "Reference Guide" entries (reference_guides.json) are original summaries
+of the real facts in two source PDFs (a CAMTECH/Indian Railways installation
+& maintenance handbook, and SEAI's "A Homeowner's Guide to Solar PV") —
+written in our own words rather than copied verbatim, and scoped to the
+jurisdiction-agnostic technical/consumer-education content. Region-specific
+regulatory or grant figures from those source documents (which are
+Ireland-specific) were deliberately left out so they don't contradict this
+app's US-oriented installer content (NEC codes, federal ITC, etc.) elsewhere
+in the knowledge base.
 
 Admin-submitted corrections (see routers/admin.py) are appended to
 KNOWLEDGE_BASE at runtime, so a query that previously fell through to
@@ -20,7 +32,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-_SOURCE_FILES = ["solar_systems.json", "case_tickets.json", "installer_queries.json"]
+_SOURCE_FILES = [
+    "solar_systems.json",
+    "case_tickets.json",
+    "installer_queries.json",
+    "reference_guides.json",
+]
 
 
 @dataclass
