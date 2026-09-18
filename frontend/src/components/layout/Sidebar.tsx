@@ -17,7 +17,15 @@ const NAV_ITEMS = [
   { href: "/help", label: "Help", adminOnly: false },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  /** Whether the off-canvas drawer is open on narrow (<nav breakpoint) screens.
+   * Ignored at the `nav` breakpoint and up, where the sidebar is always shown. */
+  isOpen?: boolean;
+  /** Called after any nav action on narrow screens, so the drawer closes. */
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { user, token, logout } = useAuth();
   const { resetConversation, conversation } = useChat();
   const pathname = usePathname();
@@ -37,19 +45,27 @@ export function Sidebar() {
   if (!user) return null;
 
   const handleLogout = () => {
+    onClose?.();
     logout();
     router.push("/login");
   };
 
   const handleNewQuestion = () => {
+    onClose?.();
     resetConversation();
     router.push("/chat");
   };
 
   return (
-    <aside className="flex h-screen w-sidebar shrink-0 flex-col border-r border-border bg-surface p-[18px_14px]">
+    <aside
+      className={[
+        "fixed inset-y-0 left-0 z-40 flex w-[260px] max-w-[80vw] transform flex-col border-r border-border bg-surface p-[18px_14px] transition-transform duration-200 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        "nav:static nav:z-auto nav:h-screen nav:w-sidebar nav:max-w-none nav:shrink-0 nav:translate-x-0 nav:transition-none",
+      ].join(" ")}
+    >
       <div className="flex items-center gap-2.5 px-1 pb-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand-gradient font-display text-md font-bold text-accent-ink">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-brand-gradient font-display text-md font-bold text-accent-ink">
           Q
         </div>
         <span className="font-display text-md font-semibold text-text">Qcells L1 Assistant</span>
@@ -70,6 +86,7 @@ export function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
+              onClick={onClose}
               className={[
                 "rounded-md px-3 py-2 font-body text-md transition-colors",
                 isActive ? "bg-accent-soft font-medium text-accent" : "text-text-dim hover:bg-surface-2",
@@ -93,6 +110,7 @@ export function Sidebar() {
               <Link
                 key={c.id}
                 href={`/chat?conversationId=${c.id}`}
+                onClick={onClose}
                 className="truncate rounded-md px-3 py-1.5 font-body text-sm text-text-dim hover:bg-surface-2 hover:text-text"
                 title={c.title}
               >

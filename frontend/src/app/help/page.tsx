@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { ContactCards } from "@/components/chat/ContactCards";
 import { SuggestionChip } from "@/components/chat/SuggestionChip";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -31,10 +31,8 @@ export default function HelpPage() {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-bg">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col overflow-y-auto px-6 py-8">
+    <AppShell>
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
         <div className="mx-auto flex w-full max-w-chat flex-col gap-6">
           <div className="flex items-center gap-3">
             <Avatar initial="Q" size={30} />
@@ -64,7 +62,7 @@ export default function HelpPage() {
             Trouble signing in or something not covered here? Contact your site administrator.
           </p>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

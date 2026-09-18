@@ -46,7 +46,10 @@ describe("MessageBubble", () => {
     expect(screen.queryByLabelText("Thumbs up")).not.toBeInTheDocument();
   });
 
-  it("shows an attachment chip on a user message that has one", () => {
+  // Attachment chip rendering is currently commented out in MessageBubble.tsx
+  // (UI-only — the data/props are unchanged). Un-skip alongside uncommenting
+  // that JSX.
+  it.skip("shows an attachment chip on a user message that has one", () => {
     const userMessage: Message = {
       ...baseMessage,
       sender: "user",

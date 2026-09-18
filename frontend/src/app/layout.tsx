@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
+import { ACTIVE_THEME } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme={ACTIVE_THEME}>
       <body className="font-body">
         <AuthProvider>
           <ChatProvider>{children}</ChatProvider>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Badge, Card, Input } from "@/components/ui";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import type { ConversationSummary } from "@/lib/types";
@@ -56,10 +56,8 @@ export default function HistoryPage() {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-bg">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col overflow-y-auto px-6 py-8">
+    <AppShell>
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
         <div className="mx-auto flex w-full max-w-chat flex-col gap-5">
           <div>
             <h1 className="font-display text-2xl font-semibold text-text">History</h1>
@@ -109,7 +107,7 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

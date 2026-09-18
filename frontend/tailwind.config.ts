@@ -1,10 +1,19 @@
 import type { Config } from "tailwindcss";
 
-// Token names below map 1:1 to design-tokens.json (the "Qcells Gradient" theme).
+// Every color/radius/shadow token here resolves through a CSS custom
+// property (see src/app/globals.css's [data-theme="gradient"] block), never
+// a hardcoded value — so these Tailwind utilities work unchanged for
+// whichever theme is active (src/lib/theme.ts). Token names map 1:1 to
+// design-tokens.json (the "Qcells Gradient" theme).
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      // Sidebar collapses to a mobile drawer below this width — matches the
+      // tablet breakpoint already baked into qcells-l1-assistant-mockups.html.
+      screens: {
+        nav: "900px",
+      },
       colors: {
         bg: "var(--bg)",
         surface: "var(--surface)",
@@ -37,17 +46,18 @@ const config: Config = {
         "4xl": "32px",
       },
       borderRadius: {
-        sm: "8px",
-        md: "14px",
-        lg: "20px",
+        sm: "var(--radius-s)",
+        md: "var(--radius-m)",
+        lg: "var(--radius-l)",
         pill: "999px",
       },
       boxShadow: {
-        default: "0 20px 44px -18px rgba(30,111,235,.18)",
+        default: "var(--shadow)",
+        // Not themed in the source mockup — identical across all 5 concepts.
         composerFloat: "0 6px 20px -10px rgba(0,0,0,.15)",
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(120deg, #22C3A6, #1E6FEB)",
+        "brand-gradient": "var(--grad)",
       },
       maxWidth: {
         chat: "620px",

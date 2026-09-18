@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Avatar } from "@/components/ui";
 import type { Message, VoteValue } from "@/lib/types";
-import { AttachmentChip } from "./AttachmentChip";
+// import { AttachmentChip } from "./AttachmentChip"; // unused while the attachment chip UI below is commented out
 import { CitationChip } from "./CitationChip";
 import { MessageActions } from "./MessageActions";
 import { ProcessTracePanel } from "./ProcessTrace";
@@ -22,6 +22,8 @@ export function MessageBubble({ message, onVote, onQuickReply }: MessageBubblePr
   if (message.sender === "user") {
     return (
       <div className="flex flex-col items-end gap-1.5">
+        {/* Attachment chips on the sent message — temporarily disabled along
+           with the composer's attach control. Uncomment to bring back.
         {message.attachments.length > 0 && (
           <div className="flex flex-wrap justify-end gap-1.5">
             {message.attachments.map((a) => (
@@ -29,6 +31,7 @@ export function MessageBubble({ message, onVote, onQuickReply }: MessageBubblePr
             ))}
           </div>
         )}
+        */}
         <div className="max-w-[420px] rounded-md bg-surface-2 px-3.5 py-2.5 font-body text-md text-text">
           {message.text}
         </div>

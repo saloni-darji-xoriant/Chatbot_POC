@@ -4,8 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Qcells Gradient theme tokens (design-tokens.json -> colors.raw) */
+/*
+ * Theme system — only the approved "Gradient" theme is implemented right
+ * now, but every color/radius/shadow a component uses comes from a CSS
+ * custom property scoped under [data-theme="gradient"] (mirroring
+ * qcells-l1-assistant-mockups.html's [data-theme="x"] token blocks), rather
+ * than being hardcoded per component. That means switching the whole app's
+ * look later is just:
+ *   1. Add a new block here, e.g. [data-theme="midnight"] { --bg: ...; },
+ *      defining the same variable names with new values.
+ *   2. Add the name to ThemeName/THEMES in src/lib/theme.ts and set
+ *      ACTIVE_THEME to it.
+ * No component/Tailwind-class changes are needed — they all reference these
+ * variables (or Tailwind utilities that map to them), never a literal color.
+ */
+:root,
+[data-theme="gradient"] {
   --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f5f8fc;
@@ -19,7 +33,16 @@
   --accent-2-soft: #22c3a61a;
   --danger: #d0413b;
   --danger-soft: #d0413b14;
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --shadow: 0 20px 44px -18px rgba(30, 111, 235, 0.18);
+  --weight-head: 600;
+  --tracking-head: -0.01em;
+  --grad: linear-gradient(120deg, #22c3a6, #1e6feb);
+}
 
+:root {
   --font-display: "Poppins", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -43,7 +66,7 @@ body {
 }
 
 .brand-gradient-text {
-  background-image: linear-gradient(120deg, #22c3a6, #1e6feb);
+  background-image: var(--grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-import { ProcessTracePanel } from "@/components/chat/ProcessTrace";
+// import { ProcessTracePanel } from "@/components/chat/ProcessTrace"; // unused while the trace/graph panel below is commented out
 import { Badge, Button, Textarea } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { Conversation, FeedbackItem, Message } from "@/lib/types";
-import { KnowledgeGraphView } from "./KnowledgeGraphView";
+// import { KnowledgeGraphView } from "./KnowledgeGraphView"; // unused while the trace/graph panel below is commented out
 
 interface FeedbackListItemProps {
   item: FeedbackItem;
@@ -93,6 +93,10 @@ export function FeedbackListItem({ item, token, onCorrectionSaved }: FeedbackLis
       )}
 
       <div className="mt-3 flex flex-wrap gap-4">
+        {/* "View trace & knowledge graph" button — temporarily hidden. The
+           underlying fetch/state (handleToggleExpand, relatedMessage) and
+           the KnowledgeGraphView component are untouched; uncomment this
+           button and the panel below to bring the feature back.
         <button
           type="button"
           onClick={handleToggleExpand}
@@ -100,6 +104,7 @@ export function FeedbackListItem({ item, token, onCorrectionSaved }: FeedbackLis
         >
           {expanded ? "Hide trace & knowledge graph" : "View trace & knowledge graph"}
         </button>
+        */}
         {!isPositive && !item.correction && (
           <button
             type="button"
@@ -111,6 +116,7 @@ export function FeedbackListItem({ item, token, onCorrectionSaved }: FeedbackLis
         )}
       </div>
 
+      {/* Trace + knowledge graph panel — see comment on the button above.
       {expanded && (
         <div className="mt-3 flex flex-col gap-3">
           {loadingConversation ? (
@@ -125,6 +131,7 @@ export function FeedbackListItem({ item, token, onCorrectionSaved }: FeedbackLis
           )}
         </div>
       )}
+      */}
 
       {showCorrectionForm && (
         <div className="mt-3 flex flex-col gap-2.5 rounded-md border border-border bg-surface-2 p-3">
