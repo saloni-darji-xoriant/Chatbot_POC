@@ -119,6 +119,12 @@ class AttachmentSummary(BaseModel):
     uploaded_at: datetime
 
 
+class MessageImage(BaseModel):
+    url: str = Field(description="Server-relative path, e.g. /static/kb-images/power-cycle-procedure.png")
+    alt: str
+    caption: Optional[str] = None
+
+
 class Message(BaseModel):
     id: str
     conversation_id: str
@@ -130,6 +136,7 @@ class Message(BaseModel):
     process_trace: list[ProcessStep] = Field(default_factory=list)
     knowledge_graph: Optional[KnowledgeGraph] = None
     attachments: list[AttachmentSummary] = Field(default_factory=list)
+    images: list[MessageImage] = Field(default_factory=list)
     vote: Optional[VoteValue] = None
     vote_reason: Optional[str] = None
     is_grounded: bool = True
@@ -149,6 +156,7 @@ class ConversationSummary(BaseModel):
     title: str
     status: ConversationStatus
     created_at: datetime
+    updated_at: datetime = Field(description="Time of the last message (or creation time if empty)")
     last_message_preview: Optional[str] = None
 
 

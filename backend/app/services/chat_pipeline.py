@@ -29,12 +29,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from app.models import AttachmentSummary, Citation, Message, MessageSender, ProcessStep, ProcessStepStatus
+from app.models import AttachmentSummary, Citation, Message, MessageImage, MessageSender, ProcessStep, ProcessStepStatus
 from app.services.attachment_store import AttachmentRecord, get as get_attachment, search_attachments
-from app.services.knowledge_base import search
+from app.services.knowledge_base import find_entry
 from app.services.knowledge_graph import get_graph
 from app.services.small_talk import CHITCHAT_QUICK_REPLIES, CHITCHAT_RESPONSES, classify_chitchat
-from app.utils import new_id
+from app.utils import new_id, utcnow
 
 
 def _attachment_summary(record: AttachmentRecord) -> AttachmentSummary:
@@ -149,7 +149,7 @@ def build_steps_for(conversation_id: str, text: str) -> list[ProcessStep]:
     if chitchat is not None:
         return build_chitchat_steps(chitchat)
 
-    entry, _score = search(text)
+    entry, _score = find_entry(text)
     graph = get_graph(entry) if entry is not None else None
     attachment_hit = search_attachments(conversation_id, text)
     return build_process_steps(entry is not None, len(graph.nodes) if graph else 0, attachment_hit)
@@ -164,7 +164,7 @@ def generate_assistant_reply(conversation_id: str, text: str, created_at: dateti
     a handoff — only a real support question with no knowledge-base match
     AND no matching attachment does.
     """
-    when = created_at or datetime.utcnow()
+    when = created_at or utcnow()
 
     chitchat = classify_chitchat(text)
     if chitchat is not None:
@@ -181,7 +181,7 @@ def generate_assistant_reply(conversation_id: str, text: str, created_at: dateti
             is_grounded=True,
         )
 
-    entry, _score = search(text)
+    entry, _score = find_entry(text)
     graph = get_graph(entry) if entry is not None else None
     attachment_hit = search_attachments(conversation_id, text)
     steps = build_process_steps(entry is not None, len(graph.nodes) if graph else 0, attachment_hit)
@@ -233,8 +233,9 @@ def generate_assistant_reply(conversation_id: str, text: str, created_at: dateti
         text="\n\n".join(answer_parts),
         created_at=when,
         citations=citations,
-        quick_replies=entry.quick_replies if entry is not None else [],
+        quick_replies=[fu["question"] for fu in entry.follow_ups] if entry is not None else [],
         process_trace=steps,
         knowledge_graph=graph,
+        images=[MessageImage(**img) for img in entry.images] if entry is not None else [],
         is_grounded=True,
     )

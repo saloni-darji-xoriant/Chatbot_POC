@@ -20,7 +20,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from app.utils import new_id
+from app.utils import new_id, utcnow
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB per file — keeps extraction fast
 MAX_ATTACHMENTS_PER_CONVERSATION = 8
@@ -51,7 +51,7 @@ class AttachmentRecord:
     size_bytes: int
     extracted_text: str | None
     extraction_note: str | None
-    uploaded_at: datetime = field(default_factory=datetime.utcnow)
+    uploaded_at: datetime = field(default_factory=utcnow)
 
 
 # conversation_id -> {attachment_id -> AttachmentRecord}

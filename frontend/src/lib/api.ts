@@ -264,4 +264,37 @@ export const api = {
       method: "DELETE",
       token,
     }),
+
+  /**
+   * Downloads the conversation as a PDF. `timeZone` is the viewer's IANA zone so
+   * the timestamps inside the PDF match what they see on screen.
+   */
+  exportConversationPdf: async (
+    token: string,
+    conversationId: string,
+    timeZone: string
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const res = await fetch(
+      `${API_URL}/chat/conversations/${conversationId}/export.pdf?tz=${encodeURIComponent(timeZone)}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        detail = (await res.json()).detail ?? detail;
+      } catch {
+        // ignore
+      }
+      throw new ApiError(res.status, detail);
+    }
+    const disposition = res.headers.get("Content-Disposition") ?? "";
+    const match = /filename="?([^";]+)"?/i.exec(disposition);
+    return { blob: await res.blob(), filename: match?.[1] ?? "qcells-chat.pdf" };
+  },
 };
+
+/** Turns a server-relative path such as `/static/kb-images/x.png` into an absolute URL. */
+export function assetUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_URL.replace(/\/api\/?$/, "")}${path}`;
+}

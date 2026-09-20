@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Composer } from "@/components/chat/Composer";
+import { ExportPdfButton } from "@/components/chat/ExportPdfButton";
 import { EndOfConversationRating } from "@/components/chat/EndOfConversationRating";
 import { ErrorBanner } from "@/components/chat/ErrorBanner";
 import { HandoffScreen } from "@/components/chat/HandoffScreen";
@@ -77,6 +78,12 @@ function ChatPageInner() {
         <>
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
             <div className="mx-auto flex w-full max-w-chat flex-col gap-6">
+              {conversation && !isEmpty && (
+                <div className="flex justify-end">
+                  <ExportPdfButton conversationId={conversation.id} />
+                </div>
+              )}
+
               {isEmpty && !isSending && (
                 <div className="flex flex-col items-center gap-6 pt-8 text-center sm:pt-16">
                   <h1 className="brand-gradient-text font-display text-3xl font-semibold sm:text-4xl">
@@ -95,10 +102,11 @@ function ChatPageInner() {
                 </div>
               )}
 
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <MessageBubble
                   key={message.id}
                   message={message}
+                  showFollowUps={index === messages.length - 1 && !isSending}
                   onVote={
                     message.sender === "assistant"
                       ? (vote, reason) => voteOnMessage(message.id, vote, reason)

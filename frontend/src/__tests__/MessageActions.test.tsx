@@ -17,7 +17,8 @@ describe("MessageActions", () => {
     expect(screen.queryByLabelText("View developer trace")).not.toBeInTheDocument();
   });
 
-  it("toggles the developer trace panel via the Trace button", async () => {
+  // Trace option is commented out in MessageActions.tsx; un-skip when it is restored.
+  it.skip("toggles the developer trace panel via the Trace button", async () => {
     const onToggleTrace = jest.fn();
     render(
       <MessageActions

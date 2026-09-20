@@ -48,7 +48,11 @@ class KBEntry:
     topic: str
     title: str
     category: str = "Installer FAQ"
-    quick_replies: list[str] = field(default_factory=list)
+    # Curated next-step questions, each routed to a specific other entry
+    # ({"question": ..., "topic": ...}) so a click never dead-ends.
+    follow_ups: list[dict] = field(default_factory=list)
+    # Diagrams shown with the answer ({"url", "alt", "caption"}).
+    images: list[dict] = field(default_factory=list)
 
 
 def _load_entries(filename: str) -> list[KBEntry]:
@@ -63,7 +67,8 @@ def _load_entries(filename: str) -> list[KBEntry]:
             topic=r["topic"],
             title=r["title"],
             category=r.get("category", "Installer FAQ"),
-            quick_replies=r.get("quick_replies", []),
+            follow_ups=r.get("follow_ups", []),
+            images=r.get("images", []),
         )
         for r in records
     ]
@@ -72,6 +77,43 @@ def _load_entries(filename: str) -> list[KBEntry]:
 KNOWLEDGE_BASE: list[KBEntry] = [
     entry for filename in _SOURCE_FILES for entry in _load_entries(filename)
 ]
+
+
+def _normalize(question: str) -> str:
+    return " ".join(question.lower().split())
+
+
+def _build_follow_up_routes() -> dict[str, str]:
+    """normalized follow-up question -> target topic. A given question text
+    must always mean the same topic (enforced here, so a bad edit to the JSON
+    fails at import time rather than misrouting a click)."""
+    routes: dict[str, str] = {}
+    for entry in KNOWLEDGE_BASE:
+        for fu in entry.follow_ups:
+            key = _normalize(fu["question"])
+            if routes.setdefault(key, fu["topic"]) != fu["topic"]:
+                raise ValueError(f"Follow-up '{fu['question']}' routes to two different topics")
+    return routes
+
+
+FOLLOW_UP_ROUTES: dict[str, str] = _build_follow_up_routes()
+
+
+def entry_by_topic(topic: str) -> KBEntry | None:
+    return next((e for e in KNOWLEDGE_BASE if e.topic == topic), None)
+
+
+def find_entry(query: str) -> tuple[KBEntry | None, int]:
+    """Like `search`, but a query that is exactly one of the curated
+    follow-up questions goes straight to its target entry - keyword search is
+    only a fallback for free-typed questions."""
+    topic = FOLLOW_UP_ROUTES.get(_normalize(query))
+    if topic is not None:
+        routed = entry_by_topic(topic)
+        if routed is not None:
+            return routed, len(routed.keywords)
+    return search(query)
+
 
 CONFIDENCE_THRESHOLD = 1  # minimum keyword hits required to consider it "grounded"
 

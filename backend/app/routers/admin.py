@@ -22,8 +22,8 @@ from app.models import (
 )
 from app.services.knowledge_base import add_correction
 from app.services.knowledge_graph import register_correction_node
-from app.store import store
-from app.utils import new_id
+from app.store import last_activity, store
+from app.utils import new_id, utcnow
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
 
@@ -37,7 +37,7 @@ def get_dashboard(_: User = Depends(require_admin)) -> DashboardResponse:
     all_conversations = list(store.conversations.values())
     all_messages = [m for c in all_conversations for m in c.messages]
     unique_users = {c.user_id for c in all_conversations}
-    today = datetime.utcnow().date()
+    today = utcnow().date()
     messages_today = sum(1 for m in all_messages if m.created_at.date() == today)
 
     grounded = [m for m in all_messages if m.sender.value == "assistant"]
@@ -53,7 +53,7 @@ def get_dashboard(_: User = Depends(require_admin)) -> DashboardResponse:
     activity: list[ActivityPoint] = []
     day_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     for i in range(6, -1, -1):
-        day = datetime.utcnow() - timedelta(days=i)
+        day = utcnow() - timedelta(days=i)
         count = sum(1 for m in all_messages if m.created_at.date() == day.date())
         # Seed a friendly baseline so the chart isn't empty on a fresh install.
         baseline = [12, 18, 9, 22, 30, 14, 8][6 - i]
@@ -109,7 +109,7 @@ def add_feedback_correction(
             filename=payload.document_filename,
             category="Admin Correction",
             file_type=DocumentType.md if payload.document_filename.endswith(".md") else DocumentType.pdf,
-            updated_at=datetime.utcnow(),
+            updated_at=utcnow(),
         )
         store.add_document(doc)
 
@@ -118,7 +118,7 @@ def add_feedback_correction(
         Correction(
             text=payload.text,
             document_filename=payload.document_filename,
-            created_at=datetime.utcnow(),
+            created_at=utcnow(),
         ),
     )
     assert updated is not None
@@ -131,13 +131,14 @@ def add_feedback_correction(
     summary="List every conversation across all users",
 )
 def list_all_conversations(_: User = Depends(require_admin)) -> list[ConversationSummary]:
-    convs = sorted(store.list_all_conversations(), key=lambda c: c.created_at, reverse=True)
+    convs = sorted(store.list_all_conversations(), key=last_activity, reverse=True)
     return [
         ConversationSummary(
             id=c.id,
             title=c.title,
             status=c.status,
             created_at=c.created_at,
+            updated_at=last_activity(c),
             last_message_preview=c.messages[-1].text if c.messages else None,
         )
         for c in convs
@@ -177,7 +178,7 @@ def create_document(payload: CreateDocumentRequest, _: User = Depends(require_ad
         filename=payload.filename,
         category=payload.category,
         file_type=payload.file_type,
-        updated_at=datetime.utcnow(),
+        updated_at=utcnow(),
     )
     store.add_document(doc)
     return doc

@@ -23,7 +23,12 @@ from app.models import (
     VoteValue,
 )
 from app.services.knowledge_base import KNOWLEDGE_BASE
-from app.utils import new_id
+from app.utils import new_id, utcnow
+
+
+def last_activity(conv: Conversation) -> datetime:
+    """When the conversation last changed — its newest message, else creation."""
+    return conv.messages[-1].created_at if conv.messages else conv.created_at
 
 
 class Store:
@@ -65,7 +70,7 @@ class Store:
         self.users[second_installer.email] = {"user": second_installer, "password": "installer123"}
         self.users[admin.email] = {"user": admin, "password": "admin123"}
 
-        now = datetime.utcnow()
+        now = utcnow()
 
         # The Documents list is derived directly from the knowledge base's own
         # citations (deduped by filename) so it always reflects the real KB
@@ -203,7 +208,7 @@ class Store:
             user_id=user_id,
             title=title or "New question",
             status=ConversationStatus.active,
-            created_at=datetime.utcnow(),
+            created_at=utcnow(),
             messages=[],
         )
         self.conversations[conv_id] = conv

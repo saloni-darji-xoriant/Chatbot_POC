@@ -8,18 +8,20 @@ interface MessageActionsProps {
   vote: VoteValue | null;
   voteReason?: string | null;
   onVote: (vote: VoteValue | null, reason?: string) => void;
-  hasTrace: boolean;
-  traceActive: boolean;
-  onToggleTrace: () => void;
+  // Trace option is commented out for now (kept for future use) - these props are
+  // therefore optional and currently unused. Restore with the button below.
+  hasTrace?: boolean;
+  traceActive?: boolean;
+  onToggleTrace?: () => void;
 }
 
 export function MessageActions({
   vote,
   voteReason,
   onVote,
-  hasTrace,
-  traceActive,
-  onToggleTrace,
+  // hasTrace,
+  // traceActive,
+  // onToggleTrace,
 }: MessageActionsProps) {
   const [showReasonInput, setShowReasonInput] = useState(false);
   const [reason, setReason] = useState(voteReason ?? "");
@@ -76,6 +78,7 @@ export function MessageActions({
           </svg>
         </button>
 
+        {/* Trace option - commented out for now; uncomment (and the props above) to bring it back.
         {hasTrace && (
           <button
             type="button"
@@ -93,6 +96,7 @@ export function MessageActions({
             Trace
           </button>
         )}
+        */}
       </div>
 
       {showReasonInput && (

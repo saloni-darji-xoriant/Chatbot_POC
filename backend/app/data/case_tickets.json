@@ -4,152 +4,493 @@
     "topic": "case_grid_fault_recurring",
     "title": "Case Q-10231: Recurring Grid Fault Shutdown",
     "category": "Case Ticket",
-    "keywords": ["grid fault", "shuts down repeatedly", "e03", "utility voltage", "anti-islanding"],
+    "keywords": [
+      "grid fault",
+      "shuts down repeatedly",
+      "e03",
+      "utility voltage",
+      "anti-islanding"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10231): inverter displayed 'Grid Fault' (E03) and shut down repeatedly. Root cause was utility voltage fluctuating outside the inverter's anti-islanding threshold. Resolution: after the utility confirmed line voltage was within ANSI C84.1 range, L2 support adjusted the inverter's grid-protection settings within the IEEE 1547 allowable window — this setting isn't installer-accessible, so this case required escalation rather than a power cycle.",
     "citations": [
-      { "label": "Case Q-10231 Resolution", "document": "Case-Q-10231.md", "section": "Resolution Summary" }
+      {
+        "label": "Case Q-10231 Resolution",
+        "document": "Case-Q-10231.md",
+        "section": "Resolution Summary"
+      }
     ],
-    "quick_replies": ["Escalate to L2", "How do I confirm utility voltage with the homeowner?"]
+    "follow_ups": [
+      {
+        "question": "How do I power-cycle the inverter safely?",
+        "topic": "inverter_fault"
+      },
+      {
+        "question": "What do the inverter error codes mean?",
+        "topic": "error_code_reference"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   },
   {
     "id": "ct-002",
     "topic": "case_hail_microcrack",
     "title": "Case Q-10287: Hail-Damaged Panel String",
     "category": "Case Ticket",
-    "keywords": ["hail", "micro-crack", "iv curve", "string output", "near-zero output", "two panels"],
+    "keywords": [
+      "hail",
+      "micro-crack",
+      "iv curve",
+      "string output",
+      "near-zero output",
+      "two panels"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10287): two panels in a 10-panel string showed near-zero output in monitoring after a hail event. An IV curve tracer confirmed micro-cracking in both panels. Resolution: both panels were replaced under the 25-year product warranty and an RMA was processed — document the hail date and any homeowner insurance claim number, since warranty and insurance claims are handled on separate tracks.",
     "citations": [
-      { "label": "Case Q-10287 Resolution", "document": "Case-Q-10287.md", "section": "Resolution Summary" },
-      { "label": "Qcells Limited Warranty Terms", "document": "Qcells-Warranty-Terms.pdf", "section": "Section 3: Claims Process" }
+      {
+        "label": "Case Q-10287 Resolution",
+        "document": "Case-Q-10287.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Qcells Limited Warranty Terms",
+        "document": "Qcells-Warranty-Terms.pdf",
+        "section": "Section 3: Claims Process"
+      }
     ],
-    "quick_replies": ["How do I request an IV curve trace?", "Where do I find the serial number?"]
+    "follow_ups": [
+      {
+        "question": "How do I file a warranty claim for damaged panels?",
+        "topic": "warranty"
+      },
+      {
+        "question": "Could damaged panels be lowering output?",
+        "topic": "panel_output"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   },
   {
     "id": "ct-003",
     "topic": "case_wifi_offline",
     "title": "Case Q-10312: System Shows Offline After Router Update",
     "category": "Case Ticket",
-    "keywords": ["system offline", "wifi", "router firmware", "ssid", "monitoring offline"],
+    "keywords": [
+      "system offline",
+      "wifi",
+      "router firmware",
+      "ssid",
+      "monitoring offline"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10312): homeowner reported the monitoring app showed 'system offline' for 3 days. Root cause was a home router firmware update that changed the SSID broadcast settings, dropping the inverter's Wi-Fi connection. Resolution: re-paired the inverter's Wi-Fi dongle to the network using the SSID/password shown in the router's admin page — the inverter itself was operating normally the entire time, only reporting was affected.",
     "citations": [
-      { "label": "Case Q-10312 Resolution", "document": "Case-Q-10312.md", "section": "Resolution Summary" },
-      { "label": "Q.OMMAND Portal FAQ", "document": "QOMMAND-Portal-FAQ.md", "section": "Connectivity Troubleshooting" }
+      {
+        "label": "Case Q-10312 Resolution",
+        "document": "Case-Q-10312.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Q.OMMAND Portal FAQ",
+        "document": "QOMMAND-Portal-FAQ.md",
+        "section": "Connectivity Troubleshooting"
+      }
     ],
-    "quick_replies": ["How do I re-pair the Wi-Fi dongle?", "Is production data lost while offline?"]
+    "follow_ups": [
+      {
+        "question": "How do I sign in to the monitoring portal?",
+        "topic": "monitoring_portal"
+      },
+      {
+        "question": "How do I set up underperformance alerts?",
+        "topic": "qommand_platform"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ],
+    "images": [
+      {
+        "url": "/static/kb-images/monitoring-connectivity.png",
+        "alt": "How the inverter, router, cloud and the portal connect - check each hop in order.",
+        "caption": "Monitoring connectivity path"
+      }
+    ]
   },
   {
     "id": "ct-004",
     "topic": "case_battery_bms_bug",
     "title": "Case Q-10355: Battery Stuck at 20% State of Charge",
     "category": "Case Ticket",
-    "keywords": ["battery not charging", "won't charge", "20%", "state of charge", "bms", "stuck charging"],
+    "keywords": [
+      "battery not charging",
+      "won't charge",
+      "20%",
+      "state of charge",
+      "bms",
+      "stuck charging"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10355): a Q.HOME ESS battery would not charge past 20% state of charge. Root cause was a known BMS (Battery Management System) firmware bug affecting the charge algorithm on early HYB-G3 units. Resolution: a remote firmware push via the Q.OMMAND portal resolved it fully — no truck roll was needed. If a battery you're servicing shows this symptom, check the firmware version first before scheduling a site visit.",
     "citations": [
-      { "label": "Case Q-10355 Resolution", "document": "Case-Q-10355.md", "section": "Resolution Summary" },
-      { "label": "Firmware Update Guide", "document": "Firmware-Update-Guide.md", "section": "Manual Update Trigger" }
+      {
+        "label": "Case Q-10355 Resolution",
+        "document": "Case-Q-10355.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Firmware Update Guide",
+        "document": "Firmware-Update-Guide.md",
+        "section": "Manual Update Trigger"
+      }
     ],
-    "quick_replies": ["How do I check the BMS firmware version?", "What's the battery warranty?"]
+    "follow_ups": [
+      {
+        "question": "What are the battery installation clearances?",
+        "topic": "battery_safety"
+      },
+      {
+        "question": "What are the Q.HOME ESS specifications?",
+        "topic": "qhome_battery"
+      },
+      {
+        "question": "How do I file a warranty claim?",
+        "topic": "warranty"
+      }
+    ]
   },
   {
     "id": "ct-005",
     "topic": "case_rsd_inspection_fail",
     "title": "Case Q-10402: Rapid Shutdown Failed Inspection",
     "category": "Case Ticket",
-    "keywords": ["rsd fails", "rapid shutdown", "initiation test", "inspection", "transmitter wiring", "combiner box"],
+    "keywords": [
+      "rsd fails",
+      "rapid shutdown",
+      "initiation test",
+      "inspection",
+      "transmitter wiring",
+      "combiner box"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10402): the rapid shutdown device failed its initiation test during inspection. Root cause was a loose RSD transmitter wiring connection at the combiner box. Resolution: re-terminated the connections and confirmed voltage dropped within the 30-second/30V spec at the array boundary; the system passed re-inspection the same day. Always torque-check RSD wiring specifically — it's a common miss during otherwise-complete installs.",
     "citations": [
-      { "label": "Case Q-10402 Resolution", "document": "Case-Q-10402.md", "section": "Resolution Summary" },
-      { "label": "NEC 690.12 Compliance Notes", "document": "NEC690-Compliance-Notes.md", "section": "Rapid Shutdown" }
+      {
+        "label": "Case Q-10402 Resolution",
+        "document": "Case-Q-10402.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "NEC 690.12 Compliance Notes",
+        "document": "NEC690-Compliance-Notes.md",
+        "section": "Rapid Shutdown"
+      }
     ],
-    "quick_replies": ["Where do I mount the RSD transmitter?", "What's the NEC 690.12 requirement?"]
+    "follow_ups": [
+      {
+        "question": "What are the rapid shutdown requirements?",
+        "topic": "rapid_shutdown"
+      },
+      {
+        "question": "Which permit and inspection documents do I need?",
+        "topic": "permits_inspection"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ],
+    "images": [
+      {
+        "url": "/static/kb-images/rapid-shutdown-layout.png",
+        "alt": "Where the RSD initiator sits and what gets de-energized within the required boundary.",
+        "caption": "Rapid shutdown layout"
+      }
+    ]
   },
   {
     "id": "ct-006",
     "topic": "case_rodent_arc_fault",
     "title": "Case Q-10460: DC Arc Fault From Rodent Damage",
     "category": "Case Ticket",
-    "keywords": ["e04", "arc fault detected", "rodent", "chewed wire", "dc wiring damage"],
+    "keywords": [
+      "e04",
+      "arc fault detected",
+      "rodent",
+      "chewed wire",
+      "dc wiring damage"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10460): inverter threw E04 'DC Arc Fault Detected'. Root cause was rodent damage — something had chewed through DC wiring insulation near the junction box, causing intermittent arcing. Resolution: replaced the damaged conduit run and added rodent guards at all conduit entry points. De-energize the string immediately if E04 appears; do not attempt to re-energize until the wiring has been physically inspected.",
     "citations": [
-      { "label": "Case Q-10460 Resolution", "document": "Case-Q-10460.md", "section": "Resolution Summary" },
-      { "label": "Q.VOLT Inverter Manual S4.3", "document": "QVOLT-Inverter-Manual.pdf", "section": "4.3 Error Code Table" }
+      {
+        "label": "Case Q-10460 Resolution",
+        "document": "Case-Q-10460.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Q.VOLT Inverter Manual S4.3",
+        "document": "QVOLT-Inverter-Manual.pdf",
+        "section": "4.3 Error Code Table"
+      }
     ],
-    "quick_replies": ["What does E04 mean?", "How do I install rodent guards?"]
+    "follow_ups": [
+      {
+        "question": "What do the inverter error codes mean?",
+        "topic": "error_code_reference"
+      },
+      {
+        "question": "What are the grounding and bonding requirements?",
+        "topic": "grounding_bonding"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ],
+    "images": [
+      {
+        "url": "/static/kb-images/inverter-error-codes.png",
+        "alt": "Common error codes and whether an installer can clear them or L2 must be involved.",
+        "caption": "Q.VOLT inverter error code quick reference"
+      }
+    ]
   },
   {
     "id": "ct-007",
     "topic": "case_shading_underperformance",
     "title": "Case Q-10489: Production Below PVWatts Estimate",
     "category": "Case Ticket",
-    "keywords": ["below estimate", "pvwatts", "underperforming", "tree shading", "15% low"],
+    "keywords": [
+      "below estimate",
+      "pvwatts",
+      "underperforming",
+      "tree shading",
+      "15% low"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10489): a new install produced 15% below the original PVWatts estimate. Root cause was tree growth causing afternoon shading that wasn't present (or wasn't accounted for) at the original design/survey stage. Resolution: no equipment fault was found — recommended tree trimming to the homeowner. This is a useful case to reference when a homeowner disputes production estimates on an otherwise healthy system.",
     "citations": [
-      { "label": "Case Q-10489 Resolution", "document": "Case-Q-10489.md", "section": "Resolution Summary" },
-      { "label": "Q.TRON Performance Guide S2", "document": "QTRON-Performance-Guide.pdf", "section": "2. Diagnosing Low Output" }
+      {
+        "label": "Case Q-10489 Resolution",
+        "document": "Case-Q-10489.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Q.TRON Performance Guide S2",
+        "document": "QTRON-Performance-Guide.pdf",
+        "section": "2. Diagnosing Low Output"
+      }
     ],
-    "quick_replies": ["How do I run a new shading analysis?", "Show me the monitoring portal steps"]
+    "follow_ups": [
+      {
+        "question": "What are the panel siting and shading clearance rules?",
+        "topic": "panel_siting_reference"
+      },
+      {
+        "question": "How do I check production in the monitoring portal?",
+        "topic": "monitoring_portal"
+      },
+      {
+        "question": "How do I diagnose low panel output?",
+        "topic": "panel_output"
+      }
+    ],
+    "images": [
+      {
+        "url": "/static/kb-images/shading-clearance.png",
+        "alt": "Keep obstructions more than 2 x h away east/west and 0.5 x h south of the array.",
+        "caption": "Shading clearance rule of thumb"
+      }
+    ]
   },
   {
     "id": "ct-008",
     "topic": "case_firmware_stuck",
     "title": "Case Q-10512: Firmware Update Stuck at 40%",
     "category": "Case Ticket",
-    "keywords": ["firmware stuck", "40%", "update interrupted", "power blip"],
+    "keywords": [
+      "firmware stuck",
+      "40%",
+      "update interrupted",
+      "power blip"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10512): a firmware update on a Q.VOLT inverter was stuck at 40% for over 2 hours. Root cause was the update being interrupted by a momentary power blip. Resolution: a manual power cycle followed by re-initiating the push from the Q.OMMAND portal completed the update successfully. If a push has been stuck for under 30 minutes, wait it out first — most transient stalls clear on their own.",
     "citations": [
-      { "label": "Case Q-10512 Resolution", "document": "Case-Q-10512.md", "section": "Resolution Summary" },
-      { "label": "Firmware Update Guide", "document": "Firmware-Update-Guide.md", "section": "Manual Update Trigger" }
+      {
+        "label": "Case Q-10512 Resolution",
+        "document": "Case-Q-10512.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Firmware Update Guide",
+        "document": "Firmware-Update-Guide.md",
+        "section": "Manual Update Trigger"
+      }
     ],
-    "quick_replies": ["The update is stuck right now", "Escalate to L2"]
+    "follow_ups": [
+      {
+        "question": "How do I push a firmware update correctly?",
+        "topic": "firmware"
+      },
+      {
+        "question": "How do I power-cycle the inverter safely?",
+        "topic": "inverter_fault"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   },
   {
     "id": "ct-009",
     "topic": "case_serial_not_found",
     "title": "Case Q-10530: Serial Number Not Found During Commissioning",
     "category": "Case Ticket",
-    "keywords": ["serial number not found", "commissioning failed", "unit not registered", "registration lag"],
+    "keywords": [
+      "serial number not found",
+      "commissioning failed",
+      "unit not registered",
+      "registration lag"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10530): the monitoring portal showed 'Serial Number Not Found' during commissioning. Root cause was a shipping/registration lag — the unit hadn't yet been entered into Qcells' production database. Resolution: escalated to logistics and the serial was activated within 24 hours. If this happens, don't reflash or replace the unit — confirm the serial against the physical label first, then escalate rather than troubleshoot further.",
     "citations": [
-      { "label": "Case Q-10530 Resolution", "document": "Case-Q-10530.md", "section": "Resolution Summary" }
+      {
+        "label": "Case Q-10530 Resolution",
+        "document": "Case-Q-10530.md",
+        "section": "Resolution Summary"
+      }
     ],
-    "quick_replies": ["Escalate to L2", "How long does registration usually take?"]
+    "follow_ups": [
+      {
+        "question": "How do I file a warranty claim?",
+        "topic": "warranty"
+      },
+      {
+        "question": "What is the standard installation sequence?",
+        "topic": "installation"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   },
   {
     "id": "ct-010",
     "topic": "case_burning_smell",
     "title": "Case Q-10567: Burning Smell Near Inverter (Safety)",
     "category": "Case Ticket",
-    "keywords": ["burning", "burning smell", "smoke", "arcing", "loose terminal", "safety hazard"],
+    "keywords": [
+      "burning",
+      "burning smell",
+      "smoke",
+      "arcing",
+      "loose terminal",
+      "safety hazard"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10567) — SAFETY: homeowner reported a burning smell near the inverter. Immediate advisory was given to de-energize the system at the AC and DC disconnects and avoid the area. An emergency technician was dispatched; root cause was a loose AC terminal lug causing arcing. Resolution: the electrician replaced the terminal and re-torqued all AC connections; the inverter tested normal afterward. Any report of burning smell, smoke, or visible arcing should be treated as urgent and escalated immediately — do not attempt phone troubleshooting first.",
     "citations": [
-      { "label": "Case Q-10567 Resolution", "document": "Case-Q-10567.md", "section": "Resolution Summary" },
-      { "label": "L1/L2 Escalation Playbook", "document": "L1-L2-Escalation-Playbook.md", "section": "Escalation Criteria" }
+      {
+        "label": "Case Q-10567 Resolution",
+        "document": "Case-Q-10567.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "L1/L2 Escalation Playbook",
+        "document": "L1-L2-Escalation-Playbook.md",
+        "section": "Escalation Criteria"
+      }
     ],
-    "quick_replies": ["Escalate to L2 immediately", "What should I tell the homeowner right now?"]
+    "follow_ups": [
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      },
+      {
+        "question": "What do the inverter error codes mean?",
+        "topic": "error_code_reference"
+      },
+      {
+        "question": "What are the grounding and bonding requirements?",
+        "topic": "grounding_bonding"
+      }
+    ]
   },
   {
     "id": "ct-011",
     "topic": "case_warranty_denied",
     "title": "Case Q-10589: Warranty Claim Denied — Pressure Washing Damage",
     "category": "Case Ticket",
-    "keywords": ["warranty denied", "pressure washing", "unauthorized cleaning", "claim rejected"],
+    "keywords": [
+      "warranty denied",
+      "pressure washing",
+      "unauthorized cleaning",
+      "claim rejected"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10589): a warranty claim for panel damage was denied. Root cause was damage attributed to unauthorized third-party pressure-washing of the array, which voids workmanship coverage under the warranty exclusions. Resolution: claim denied for the panel; installer advised to share Qcells' approved cleaning guidelines with the homeowner going forward to prevent recurrence.",
     "citations": [
-      { "label": "Case Q-10589 Resolution", "document": "Case-Q-10589.md", "section": "Resolution Summary" },
-      { "label": "Qcells Limited Warranty Terms", "document": "Qcells-Warranty-Terms.pdf", "section": "Section 5: Exclusions" }
+      {
+        "label": "Case Q-10589 Resolution",
+        "document": "Case-Q-10589.md",
+        "section": "Resolution Summary"
+      },
+      {
+        "label": "Qcells Limited Warranty Terms",
+        "document": "Qcells-Warranty-Terms.pdf",
+        "section": "Section 5: Exclusions"
+      }
     ],
-    "quick_replies": ["What are the approved cleaning guidelines?", "How do I appeal a denied claim?"]
+    "follow_ups": [
+      {
+        "question": "How do I file a warranty claim correctly?",
+        "topic": "warranty"
+      },
+      {
+        "question": "How often should panels be cleaned?",
+        "topic": "spv_maintenance_cadence_reference"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   },
   {
     "id": "ct-012",
     "topic": "case_itc_financing_question",
     "title": "Case Q-10418: Federal ITC + State Rebate Stacking Question",
     "category": "Case Ticket",
-    "keywords": ["federal itc", "tax credit", "state rebate", "stacking incentives", "financing question"],
+    "keywords": [
+      "federal itc",
+      "tax credit",
+      "state rebate",
+      "stacking incentives",
+      "financing question"
+    ],
     "answer": "Similar resolved case (Ticket #Q-10418): an installer asked whether the federal Investment Tax Credit (ITC) can be stacked with a state rebate for a 9.6kW system. This is a financial/program question outside L1 technical support scope. Resolution: routed to the Qcells financing partner FAQ and the sales team, who handle incentive-stacking guidance — L1/L2 support does not provide tax or financial advice.",
     "citations": [
-      { "label": "Case Q-10418 Resolution", "document": "Case-Q-10418.md", "section": "Resolution Summary" }
+      {
+        "label": "Case Q-10418 Resolution",
+        "document": "Case-Q-10418.md",
+        "section": "Resolution Summary"
+      }
     ],
-    "quick_replies": ["Who do I contact for financing questions?", "Escalate to L2"]
+    "follow_ups": [
+      {
+        "question": "How is system sizing and net metering handled?",
+        "topic": "system_sizing"
+      },
+      {
+        "question": "Which permit and inspection documents do I need?",
+        "topic": "permits_inspection"
+      },
+      {
+        "question": "How do I escalate this to L2?",
+        "topic": "escalation_process"
+      }
+    ]
   }
 ]

@@ -212,6 +212,26 @@ queries, realistic for Qcells" as scoped in the chat request. If you have an act
 SOW with a specific schema or content list, share it and the JSON files above can be
 re-shaped to match exactly.
 
+## Follow-ups, images, PDF export, history
+
+- **Suggested follow-ups** — every KB entry carries 2-4 curated `follow_ups`
+  (`{question, topic}`) chosen to get an installer to a resolution faster (next
+  diagnostic step, the relevant reference, or escalation). Clicking one is routed
+  straight to its target entry (`find_entry` in `knowledge_base.py`), so it never
+  repeats the same answer or dead-ends in a handoff; tests enforce this. They appear
+  under the latest assistant message only, and travel in `Message.quick_replies`.
+- **Images in answers** — troubleshooting/how-to answers attach an original diagram
+  (`Message.images`, served from `/static/kb-images/`). Regenerate them with
+  `python backend/scripts/generate_kb_images.py` (Pillow, no external assets).
+- **Export chat as PDF** — "Export PDF" on the chat page downloads the transcript.
+- **History** — newest activity first by default, "Sort by date" toggles oldest first,
+  grouped by day (Today / Yesterday / date).
+- **Timezones** — the backend emits timezone-aware UTC; the browser shows every time in
+  the viewer's own timezone, and the PDF export receives that zone via `tz`, so times
+  follow whichever location the app is used from.
+- **Trace** — the per-message Trace button/panel is commented out (code kept in
+  `MessageActions.tsx` / `MessageBubble.tsx`; its Jest test is skipped) for a later release.
+
 ## Attachments
 
 Click the paperclip in the composer to attach a document (`.txt` `.md` `.csv` `.json`
@@ -257,7 +277,9 @@ spec — everywhere else uses solid surface/border/text colors.
 All endpoints are namespaced under `/api` and documented live in Swagger (`/docs`).
 
 - `POST /api/auth/login`, `POST /api/auth/sso`, `GET /api/auth/me`
-- `POST /api/chat/conversations`, `GET /api/chat` (history), `GET /api/chat/conversations/{id}`
+- `POST /api/chat/conversations`, `GET /api/chat` (history, most recently active first; each item has `updated_at`), `GET /api/chat/conversations/{id}`
+- `GET /api/chat/conversations/{id}/export.pdf?tz=<IANA zone>` — PDF transcript (diagrams and sources included); times are rendered in the viewer's timezone, UTC if `tz` is missing/unknown
+- `GET /static/kb-images/*.png` — diagrams attached to knowledge-base answers
 - `POST /api/chat/conversations/{id}/messages/stream` — **SSE** endpoint the chat UI
   uses: streams `user_message`, then a `trace` event per pipeline agent (Router,
   Retrieval/RAG, Response, Grounding) as each one runs, then the final

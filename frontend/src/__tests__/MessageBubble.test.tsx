@@ -32,6 +32,33 @@ describe("MessageBubble", () => {
     expect(onQuickReply).toHaveBeenCalledWith("The fault code came back");
   });
 
+  it("labels quick replies as suggested follow-ups", () => {
+    render(<MessageBubble message={baseMessage} onQuickReply={jest.fn()} />);
+    expect(screen.getByRole("group", { name: "Suggested follow-ups" })).toBeInTheDocument();
+  });
+
+  it("hides follow-ups on older messages (showFollowUps=false)", () => {
+    render(<MessageBubble message={baseMessage} onQuickReply={jest.fn()} showFollowUps={false} />);
+    expect(screen.queryByText("The fault code came back")).not.toBeInTheDocument();
+  });
+
+  it("renders a response image with its caption and absolute backend URL", () => {
+    const withImage: Message = {
+      ...baseMessage,
+      images: [{ url: "/static/kb-images/power-cycle-procedure.png", alt: "Power-cycle order", caption: "Power-cycle procedure" }],
+    };
+    render(<MessageBubble message={withImage} />);
+    const img = screen.getByAltText("Power-cycle order") as HTMLImageElement;
+    expect(img.src).toMatch(/^https?:\/\/.+\/static\/kb-images\/power-cycle-procedure\.png$/);
+    expect(img.src).not.toContain("/api/static");
+    expect(screen.getByText("Power-cycle procedure")).toBeInTheDocument();
+  });
+
+  it("does not render the Trace option (commented out)", () => {
+    render(<MessageBubble message={{ ...baseMessage, process_trace: [{ label: "x", status: "done" }] }} onVote={jest.fn()} />);
+    expect(screen.queryByLabelText("View developer trace")).not.toBeInTheDocument();
+  });
+
   it("toggles a thumbs-up vote via onVote", async () => {
     const onVote = jest.fn();
     render(<MessageBubble message={baseMessage} onVote={onVote} />);

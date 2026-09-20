@@ -1,8 +1,9 @@
 import asyncio
 import json
+import re
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
 from fastapi.responses import StreamingResponse
 
 from app.auth import get_current_user
@@ -28,9 +29,10 @@ from app.models import (
     VoteRequest,
 )
 from app.services import attachment_store
+from app.services.pdf_export import build_conversation_pdf, resolve_timezone
 from app.services.chat_pipeline import build_steps_for, generate_assistant_reply, resolve_attachments
-from app.store import store
-from app.utils import new_id
+from app.store import last_activity, store
+from app.utils import new_id, utcnow
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -49,18 +51,17 @@ def create_conversation(
 @router.get(
     "",
     response_model=list[ConversationSummary],
-    summary="List the current user's conversation history",
+    summary="List the current user's conversation history, most recently active first",
 )
 def list_conversations(user: User = Depends(get_current_user)) -> list[ConversationSummary]:
-    convs = sorted(
-        store.list_conversations_for_user(user.id), key=lambda c: c.created_at, reverse=True
-    )
+    convs = sorted(store.list_conversations_for_user(user.id), key=last_activity, reverse=True)
     return [
         ConversationSummary(
             id=c.id,
             title=c.title,
             status=c.status,
             created_at=c.created_at,
+            updated_at=last_activity(c),
             last_message_preview=c.messages[-1].text if c.messages else None,
         )
         for c in convs
@@ -88,6 +89,33 @@ def get_conversation(conversation_id: str, user: User = Depends(get_current_user
     if conv is None or conv.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
     return conv
+
+
+@router.get(
+    "/conversations/{conversation_id}/export.pdf",
+    summary="Export a conversation as a PDF transcript",
+    description="Times in the PDF are rendered in the viewer's timezone - pass the browser's IANA "
+    "zone (e.g. `Asia/Kolkata`) as `tz`. Unknown or missing zones fall back to UTC.",
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+def export_conversation_pdf(
+    conversation_id: str,
+    tz: str | None = Query(default=None, max_length=64, description="Viewer's IANA timezone"),
+    user: User = Depends(get_current_user),
+) -> Response:
+    conv = store.get_conversation(conversation_id)
+    if conv is None or conv.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation not found")
+    zone = resolve_timezone(tz)
+    now = utcnow()
+    pdf_bytes = build_conversation_pdf(conv, user, tz, now)
+    slug = re.sub(r"[^a-z0-9]+", "-", conv.title.lower()).strip("-")[:40] or "chat"
+    stamp = now.astimezone(zone).strftime("%Y%m%d-%H%M")
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="qcells-chat-{slug}-{stamp}.pdf"'},
+    )
 
 
 @router.post(
@@ -167,7 +195,7 @@ def send_message(
         conversation_id=conversation_id,
         sender=MessageSender.user,
         text=payload.text,
-        created_at=datetime.utcnow(),
+        created_at=utcnow(),
         attachments=resolve_attachments(payload.attachment_ids),
     )
     store.add_message(conversation_id, user_message)
@@ -196,7 +224,7 @@ async def _stream_pipeline(conversation_id: str, text: str, attachment_ids: list
         conversation_id=conversation_id,
         sender=MessageSender.user,
         text=text,
-        created_at=datetime.utcnow(),
+        created_at=utcnow(),
         attachments=resolve_attachments(attachment_ids),
     )
     store.add_message(conversation_id, user_message)
@@ -322,7 +350,7 @@ def vote_message(
                 sentiment=payload.vote,
                 stars=None,
                 comment=payload.reason,
-                created_at=datetime.utcnow(),
+                created_at=utcnow(),
                 user_name=user.name,
             )
         )
@@ -355,7 +383,7 @@ def rate_conversation(
                 sentiment=payload.thumbs,
                 stars=payload.stars,
                 comment=payload.comment,
-                created_at=datetime.utcnow(),
+                created_at=utcnow(),
                 user_name=user.name,
             )
         )
@@ -365,5 +393,5 @@ def rate_conversation(
         stars=payload.stars,
         thumbs=payload.thumbs,
         comment=payload.comment,
-        created_at=datetime.utcnow(),
+        created_at=utcnow(),
     )

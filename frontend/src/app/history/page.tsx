@@ -7,6 +7,13 @@ import { Badge, Card, Input } from "@/components/ui";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import {
+  HISTORY_SORT_LABELS,
+  formatDateTime,
+  groupByDay,
+  sortConversations,
+  type HistorySort,
+} from "@/lib/history";
 import type { ConversationSummary } from "@/lib/types";
 
 const STATUS_TONE: Record<ConversationSummary["status"], "positive" | "negative" | "neutral"> = {
@@ -27,6 +34,7 @@ export default function HistoryPage() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<HistorySort>("newest");
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -45,13 +53,17 @@ export default function HistoryPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return conversations;
-    return conversations.filter(
-      (c) =>
-        c.title.toLowerCase().includes(q) ||
-        (c.last_message_preview ?? "").toLowerCase().includes(q)
-    );
-  }, [conversations, query]);
+    const matches = !q
+      ? conversations
+      : conversations.filter(
+          (c) =>
+            c.title.toLowerCase().includes(q) ||
+            (c.last_message_preview ?? "").toLowerCase().includes(q)
+        );
+    return sortConversations(matches, sort);
+  }, [conversations, query, sort]);
+
+  const groups = useMemo(() => groupByDay(filtered), [filtered]);
 
   if (!user) return null;
 
@@ -66,12 +78,31 @@ export default function HistoryPage() {
             </p>
           </div>
 
-          <Input
-            aria-label="Search conversations"
-            placeholder="Search conversations..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <Input
+                aria-label="Search conversations"
+                placeholder="Search conversations..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+            <label className="flex items-center gap-2 font-body text-sm text-text-dim">
+              Sort by date
+              <select
+                aria-label="Sort conversations by date and time"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as HistorySort)}
+                className="rounded-md border border-border bg-surface px-2.5 py-2 font-body text-sm text-text outline-none focus:border-accent"
+              >
+                {(Object.keys(HISTORY_SORT_LABELS) as HistorySort[]).map((key) => (
+                  <option key={key} value={key}>
+                    {HISTORY_SORT_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {loading ? (
             <p className="font-body text-md text-text-dim">Loading history...</p>
@@ -82,27 +113,34 @@ export default function HistoryPage() {
                 : "No conversations match your search."}
             </p>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filtered.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => router.push(`/chat?conversationId=${c.id}`)}
-                  className="text-left"
-                >
-                  <Card className="flex flex-col gap-1.5 transition-colors hover:border-accent">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="truncate font-body text-md font-semibold text-text">{c.title}</p>
-                      <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
-                    </div>
-                    {c.last_message_preview && (
-                      <p className="truncate font-body text-sm text-text-dim">{c.last_message_preview}</p>
-                    )}
-                    <p className="font-mono text-xs text-text-dim">
-                      {new Date(c.created_at).toLocaleString()}
-                    </p>
-                  </Card>
-                </button>
+            <div className="flex flex-col gap-5">
+              {groups.map((group) => (
+                <section key={group.label} aria-label={group.label} className="flex flex-col gap-3">
+                  <h2 className="font-body text-xs font-semibold uppercase tracking-wide text-text-dim">
+                    {group.label}
+                  </h2>
+                  {group.items.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => router.push(`/chat?conversationId=${c.id}`)}
+                      className="text-left"
+                    >
+                      <Card className="flex flex-col gap-1.5 transition-colors hover:border-accent">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate font-body text-md font-semibold text-text">{c.title}</p>
+                          <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                        </div>
+                        {c.last_message_preview && (
+                          <p className="truncate font-body text-sm text-text-dim">{c.last_message_preview}</p>
+                        )}
+                        <p className="font-mono text-xs text-text-dim">
+                          {formatDateTime(c.updated_at ?? c.created_at)}
+                        </p>
+                      </Card>
+                    </button>
+                  ))}
+                </section>
               ))}
             </div>
           )}

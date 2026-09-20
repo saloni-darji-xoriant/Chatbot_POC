@@ -59,6 +59,12 @@ export interface AttachmentSummary {
   uploaded_at: string;
 }
 
+export interface MessageImage {
+  url: string;
+  alt: string;
+  caption?: string | null;
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -70,6 +76,7 @@ export interface Message {
   process_trace: ProcessStep[];
   knowledge_graph?: KnowledgeGraph | null;
   attachments: AttachmentSummary[];
+  images?: MessageImage[];
   vote: VoteValue | null;
   vote_reason?: string | null;
   is_grounded: boolean;
@@ -89,6 +96,8 @@ export interface ConversationSummary {
   title: string;
   status: ConversationStatus;
   created_at: string;
+  /** Time of the last message (or creation if empty) — drives history ordering. */
+  updated_at: string;
   last_message_preview?: string | null;
 }
 
