@@ -18,3 +18,13 @@ backend/.env
 .DS_Store
 .vscode
 .idea
+
+# Python virtual environments and caches (any location)
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Build caches
+*.tsbuildinfo
