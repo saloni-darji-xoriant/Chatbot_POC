@@ -140,6 +140,10 @@ class Message(BaseModel):
     vote: Optional[VoteValue] = None
     vote_reason: Optional[str] = None
     is_grounded: bool = True
+    is_ai_generated: bool = Field(
+        default=False,
+        description="True when a language model wrote the text (general guidance, or a KB answer reworded conversationally)",
+    )
 
 
 class Conversation(BaseModel):

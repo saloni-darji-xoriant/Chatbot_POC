@@ -99,6 +99,10 @@ def _build_follow_up_routes() -> dict[str, str]:
 FOLLOW_UP_ROUTES: dict[str, str] = _build_follow_up_routes()
 
 
+def is_follow_up_question(query: str) -> bool:
+    return _normalize(query) in FOLLOW_UP_ROUTES
+
+
 def entry_by_topic(topic: str) -> KBEntry | None:
     return next((e for e in KNOWLEDGE_BASE if e.topic == topic), None)
 

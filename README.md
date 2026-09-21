@@ -229,6 +229,15 @@ re-shaped to match exactly.
 - **Timezones** — the backend emits timezone-aware UTC; the browser shows every time in
   the viewer's own timezone, and the PDF export receives that zone via `tz`, so times
   follow whichever location the app is used from.
+- **Image viewer** — click a diagram to open it full-screen; zoom with the buttons, `+`/`-`/`0`,
+  Ctrl+wheel or double-click; download it or open it in a new tab.
+- **Human-like replies** — questions the knowledge base can't answer get a conversational,
+  labelled reply (and single-keyword matches such as "my solar panel is not working" are
+  reworded from the matched entry) instead of the handoff screen. The handoff screen now
+  appears only when you ask for a person. Add a key to `backend/.env` to have a language model
+  write these replies (`OPENAI_API_KEY` or `ANTHROPIC_API_KEY`, see `backend/.env.example`);
+  without one, built-in guidance is used. Never commit the key.
+- **Attachments** — the composer's attach button is back (see [Attachments](#attachments)).
 - **Trace** — the per-message Trace button/panel is commented out (code kept in
   `MessageActions.tsx` / `MessageBubble.tsx`; its Jest test is skipped) for a later release.
 

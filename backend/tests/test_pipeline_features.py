@@ -66,7 +66,7 @@ def test_stream_endpoint_emits_full_pipeline_for_grounded_query() -> None:
     assert done_payload["conversation_status"] == "active"
 
 
-def test_stream_endpoint_emits_handoff_for_unmatched_query() -> None:
+def test_stream_endpoint_emits_handoff_for_human_request() -> None:
     import json
 
     token = _login()
@@ -76,7 +76,7 @@ def test_stream_endpoint_emits_handoff_for_unmatched_query() -> None:
     with client.stream(
         "POST",
         f"/api/chat/conversations/{conv['id']}/messages/stream",
-        json={"text": "zzz completely unrelated gibberish zzz"},
+        json={"text": "zzz can I talk to a human please zzz"},
         headers=headers,
     ) as resp:
         raw = "".join(resp.iter_text())

@@ -30,7 +30,12 @@ from app.models import (
 )
 from app.services import attachment_store
 from app.services.pdf_export import build_conversation_pdf, resolve_timezone
-from app.services.chat_pipeline import build_steps_for, generate_assistant_reply, resolve_attachments
+from app.services.chat_pipeline import (
+    build_steps_for,
+    generate_assistant_reply,
+    needs_handoff,
+    resolve_attachments,
+)
 from app.store import last_activity, store
 from app.utils import new_id, utcnow
 
@@ -201,7 +206,7 @@ def send_message(
     store.add_message(conversation_id, user_message)
 
     assistant_message = generate_assistant_reply(conversation_id, payload.text)
-    if not assistant_message.is_grounded:
+    if needs_handoff(assistant_message):
         conv.status = ConversationStatus.handoff
     store.add_message(conversation_id, assistant_message)
 
@@ -254,11 +259,12 @@ async def _stream_pipeline(conversation_id: str, text: str, attachment_ids: list
     yield _sse("trace", {"steps": [json.loads(s.model_dump_json()) for s in steps]})
     await asyncio.sleep(0.2)
 
-    assistant_message = generate_assistant_reply(conversation_id, text)
+    # The language-model call blocks on the network, so keep it off the event loop.
+    assistant_message = await asyncio.to_thread(generate_assistant_reply, conversation_id, text)
     store.add_message(conversation_id, assistant_message)
     yield _sse("assistant_message", json.loads(assistant_message.model_dump_json()))
 
-    if not assistant_message.is_grounded:
+    if needs_handoff(assistant_message):
         conv.status = ConversationStatus.handoff
         from app.services.knowledge_base import HANDOFF_CONTACTS
 

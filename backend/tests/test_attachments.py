@@ -159,7 +159,7 @@ def test_unsupported_query_with_no_attachment_match_still_hands_off() -> None:
 
     resp = client.post(
         f"/api/chat/conversations/{conv_id}/messages",
-        json={"text": "Do you offer gift cards for referrals?"},
+        json={"text": "Do you offer gift cards for referrals? Connect me to a live agent."},
         headers=headers,
     )
     result = resp.json()

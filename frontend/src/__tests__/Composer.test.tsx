@@ -24,11 +24,8 @@ describe("Composer", () => {
     expect(input).toHaveValue("");
   });
 
-  // The following three cover the attach button / attachment chips / upload
-  // indicator, which are currently commented out in Composer.tsx (UI-only —
-  // the props, handlers, and ChatContext logic they exercise are unchanged).
-  // Un-skip alongside uncommenting that JSX.
-  it.skip("calls onAttach when a file is selected via the attach button", async () => {
+  // Attach button / attachment chips / upload indicator.
+  it("calls onAttach when a file is selected via the attach button", async () => {
     const onAttach = jest.fn();
     render(<Composer {...baseProps} onAttach={onAttach} />);
     const file = new File(["hello"], "notes.txt", { type: "text/plain" });
@@ -37,7 +34,7 @@ describe("Composer", () => {
     expect(onAttach).toHaveBeenCalledWith(file);
   });
 
-  it.skip("renders pending attachment chips and removes one on click", async () => {
+  it("renders pending attachment chips and removes one on click", async () => {
     const onRemoveAttachment = jest.fn();
     const attachment: AttachmentSummary = {
       id: "att_1",
@@ -55,7 +52,7 @@ describe("Composer", () => {
     expect(onRemoveAttachment).toHaveBeenCalledWith("att_1");
   });
 
-  it.skip("shows an uploading indicator while an attachment is in flight", () => {
+  it("shows an uploading indicator while an attachment is in flight", () => {
     render(<Composer {...baseProps} isUploadingAttachment />);
     expect(screen.getByText("Attaching...")).toBeInTheDocument();
   });

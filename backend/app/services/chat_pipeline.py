@@ -27,11 +27,14 @@ chit-chat detection.
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from datetime import datetime
 
 from app.models import AttachmentSummary, Citation, Message, MessageImage, MessageSender, ProcessStep, ProcessStepStatus
 from app.services.attachment_store import AttachmentRecord, get as get_attachment, search_attachments
-from app.services.knowledge_base import find_entry
+from app.services import llm
+from app.services.knowledge_base import KBEntry, find_entry, is_follow_up_question
 from app.services.knowledge_graph import get_graph
 from app.services.small_talk import CHITCHAT_QUICK_REPLIES, CHITCHAT_RESPONSES, classify_chitchat
 from app.utils import new_id, utcnow
@@ -142,77 +145,305 @@ def build_process_steps(matched: bool, node_count: int, attachment_hit: tuple | 
     return steps
 
 
+# A single keyword hit ("panel") is a weak signal: the question is probably
+# open-ended, so - when a language model is configured - it is answered
+# conversationally from that entry instead of pasting the canned text.
+WEAK_MATCH_SCORE = 1
+
+# Each of these is also a routed KB follow-up (or a human request), so clicking
+# one never dead-ends.
+AI_QUICK_REPLIES = [
+    "What do the inverter error codes mean?",
+    "How do I diagnose low panel output?",
+    "How do I escalate this to L2?",
+    "Connect me to a live specialist",
+]
+
+_HUMAN_REQUEST_RE = re.compile(
+    r"\b(talk|speak|chat)\s+(to|with)\s+(a\s+|an\s+|the\s+)?(human|person|agent|specialist|representative|someone|somebody|real)\b"
+    r"|\b(live|human|real)\s+(agent|person|specialist|support|representative)\b"
+    r"|\bconnect\s+me\b|\bhand\s*off\b|\bescalate\s+me\b",
+    re.IGNORECASE,
+)
+
+OFFLINE_GUIDANCE = (
+    "I'm sorry you're running into this - let's narrow it down together.\n\n"
+    "A few quick things that will help me point you the right way:\n"
+    "1. What is the inverter display or the monitoring app showing right now - any error code, or a red/orange light?\n"
+    "2. When did it start, and did anything change just before (a storm, a power cut, a router or firmware update)?\n"
+    "3. Is the whole system affected, or only some panels or strings?\n\n"
+    "While you check, please stay safe: don't open the DC junction box, touch wiring or work on the roof. "
+    "If you notice a burning smell, smoke, sparks or crackling, switch off the AC disconnect if it's safe to do so and call the emergency line straight away.\n\n"
+    "Tell me what you find and I'll dig into the specific steps - or say the word and I'll connect you with a live specialist."
+)
+
+
+def wants_human(text: str) -> bool:
+    return bool(_HUMAN_REQUEST_RE.search(text))
+
+
+def needs_handoff(message: Message) -> bool:
+    """A reply only escalates to the L2 handoff screen when it is neither
+    grounded in the knowledge base nor a model-written answer - i.e. when the
+    user explicitly asked for a person."""
+    return not message.is_grounded and not message.is_ai_generated
+
+
+@dataclass
+class Plan:
+    """What the pipeline will do for one message. Derived from cheap, pure
+    inputs so the live trace and the final reply always agree."""
+
+    kind: str  # "chitchat" | "kb" | "kb_ai" | "ai" | "handoff"
+    chitchat: str | None = None
+    entry: KBEntry | None = None
+    attachment_hit: tuple | None = None
+
+
+def plan_for(conversation_id: str, text: str, use_llm: bool = True) -> Plan:
+    chitchat = classify_chitchat(text)
+    if chitchat is not None:
+        return Plan("chitchat", chitchat=chitchat)
+
+    # An explicit request for a person wins over retrieval (whose loose keyword
+    # matching could otherwise answer "connect me to a specialist" with a spec sheet).
+    if wants_human(text) and not is_follow_up_question(text):
+        return Plan("handoff")
+
+    entry, score = find_entry(text)
+    attachment_hit = search_attachments(conversation_id, text)
+
+    if entry is None and attachment_hit is None:
+        return Plan("ai")
+
+    weak = (
+        entry is not None
+        and attachment_hit is None
+        and score <= WEAK_MATCH_SCORE
+        and not is_follow_up_question(text)
+        and use_llm
+        and llm.is_enabled()
+    )
+    return Plan("kb_ai" if weak else "kb", entry=entry, attachment_hit=attachment_hit)
+
+
+def build_ai_steps(llm_on: bool) -> list[ProcessStep]:
+    return [
+        ProcessStep(label="Classify intent and route the query", status=ProcessStepStatus.done, agent="Router Agent"),
+        ProcessStep(
+            label="Retrieve candidate sources from the knowledge graph (no matching subgraph)",
+            status=ProcessStepStatus.done,
+            agent="Retrieval Agent (RAG)",
+        ),
+        ProcessStep(
+            label=(
+                "Draft a conversational reply with the language model"
+                if llm_on
+                else "Draft a conversational reply from built-in guidance"
+            ),
+            status=ProcessStepStatus.done,
+            agent="Response Agent",
+        ),
+        ProcessStep(
+            label="Not from the knowledge base - labelled as general guidance, with escalation offered",
+            status=ProcessStepStatus.done,
+            agent="Grounding Agent",
+        ),
+    ]
+
+
+def _history(conversation_id: str) -> list[tuple[str, str]]:
+    """Prior user/assistant turns for the language model, excluding the
+    message currently being answered."""
+    from app.store import store  # lazy: store seeds itself using this module
+
+    conv = store.get_conversation(conversation_id)
+    if conv is None:
+        return []
+    messages = conv.messages
+    if messages and messages[-1].sender == MessageSender.user:
+        messages = messages[:-1]
+    return [(m.sender.value, m.text) for m in messages if m.sender != MessageSender.system]
+
+
 def build_steps_for(conversation_id: str, text: str) -> list[ProcessStep]:
     """Cheap, side-effect-free step planning used by the SSE endpoint to
     reveal live progress before the final message is assembled."""
-    chitchat = classify_chitchat(text)
-    if chitchat is not None:
-        return build_chitchat_steps(chitchat)
+    plan = plan_for(conversation_id, text)
+    if plan.kind == "chitchat":
+        return build_chitchat_steps(plan.chitchat or "")
+    if plan.kind == "ai":
+        return build_ai_steps(llm.is_enabled())
 
-    entry, _score = find_entry(text)
-    graph = get_graph(entry) if entry is not None else None
-    attachment_hit = search_attachments(conversation_id, text)
-    return build_process_steps(entry is not None, len(graph.nodes) if graph else 0, attachment_hit)
+    graph = get_graph(plan.entry) if plan.entry is not None else None
+    steps = build_process_steps(plan.entry is not None, len(graph.nodes) if graph else 0, plan.attachment_hit)
+    if plan.kind == "kb_ai":
+        for step in steps:
+            if step.agent == "Response Agent":
+                step.label = "Reword the retrieved answer conversationally with the language model"
+    return steps
 
 
-def generate_assistant_reply(conversation_id: str, text: str, created_at: datetime | None = None) -> Message:
-    """Run the full mock pipeline for one user message and return the
-    assistant's reply message (grounded — from the knowledge base and/or an
-    attachment — or an ungrounded handoff message).
+def handoff_reply(conversation_id: str, when: datetime | None = None) -> Message:
+    """The reply that sends the conversation to a live specialist (L2)."""
+    return Message(
+        id=new_id("msg"),
+        conversation_id=conversation_id,
+        sender=MessageSender.assistant,
+        text="Of course - I'm connecting you with a live specialist (L2) who can take it from here.",
+        created_at=when or utcnow(),
+        citations=[],
+        quick_replies=[],
+        process_trace=build_process_steps(False, 0, None),
+        knowledge_graph=None,
+        is_grounded=False,
+    )
 
-    Greetings/thanks/farewells are handled conversationally and never trigger
-    a handoff — only a real support question with no knowledge-base match
-    AND no matching attachment does.
+
+def generate_assistant_reply(
+    conversation_id: str, text: str, created_at: datetime | None = None, use_llm: bool = True
+) -> Message:
+    """Run the full pipeline for one user message and return the assistant's
+    reply. Order of preference:
+
+    1. Small talk -> friendly conversational reply.
+    2. Knowledge base / attachment match -> grounded answer with citations,
+       a diagram and follow-ups (reworded by the model when the match is weak).
+    3. No match -> a human-sounding general-guidance reply (model-written, or
+       built-in when no model is configured), never a handoff by itself.
+    4. Only an explicit request for a person -> L2 handoff.
     """
     when = created_at or utcnow()
+    plan = plan_for(conversation_id, text, use_llm)
 
-    chitchat = classify_chitchat(text)
-    if chitchat is not None:
+    if plan.kind == "chitchat":
+        kind = plan.chitchat or ""
         return Message(
             id=new_id("msg"),
             conversation_id=conversation_id,
             sender=MessageSender.assistant,
-            text=CHITCHAT_RESPONSES[chitchat],
+            text=CHITCHAT_RESPONSES[kind],
             created_at=when,
             citations=[],
-            quick_replies=CHITCHAT_QUICK_REPLIES[chitchat],
-            process_trace=build_chitchat_steps(chitchat),
+            quick_replies=CHITCHAT_QUICK_REPLIES[kind],
+            process_trace=build_chitchat_steps(kind),
             knowledge_graph=None,
             is_grounded=True,
         )
 
-    entry, _score = find_entry(text)
-    graph = get_graph(entry) if entry is not None else None
-    attachment_hit = search_attachments(conversation_id, text)
-    steps = build_process_steps(entry is not None, len(graph.nodes) if graph else 0, attachment_hit)
+    if plan.kind == "handoff":
+        return handoff_reply(conversation_id, when)
 
-    if entry is None and attachment_hit is None:
+    if plan.kind == "ai":
+        return build_ai_steps(llm.is_enabled())
+
+    graph = get_graph(plan.entry) if plan.entry is not None else None
+    steps = build_process_steps(plan.entry is not None, len(graph.nodes) if graph else 0, plan.attachment_hit)
+    if plan.kind == "kb_ai":
+        for step in steps:
+            if step.agent == "Response Agent":
+                step.label = "Reword the retrieved answer conversationally with the language model"
+    return steps
+
+
+def handoff_reply(conversation_id: str, when: datetime | None = None) -> Message:
+    """The reply that sends the conversation to a live specialist (L2)."""
+    return Message(
+        id=new_id("msg"),
+        conversation_id=conversation_id,
+        sender=MessageSender.assistant,
+        text="Of course - I'm connecting you with a live specialist (L2) who can take it from here.",
+        created_at=when or utcnow(),
+        citations=[],
+        quick_replies=[],
+        process_trace=build_process_steps(False, 0, None),
+        knowledge_graph=None,
+        is_grounded=False,
+    )
+
+
+def generate_assistant_reply(
+    conversation_id: str, text: str, created_at: datetime | None = None, use_llm: bool = True
+) -> Message:
+    """Run the full pipeline for one user message and return the assistant's
+    reply. Order of preference:
+
+    1. Small talk -> friendly conversational reply.
+    2. Knowledge base / attachment match -> grounded answer with citations,
+       a diagram and follow-ups (reworded by the model when the match is weak).
+    3. No match -> a human-sounding general-guidance reply (model-written, or
+       built-in when no model is configured), never a handoff by itself.
+    4. Only an explicit request for a person -> L2 handoff.
+    """
+    when = created_at or utcnow()
+    plan = plan_for(conversation_id, text, use_llm)
+
+    if plan.kind == "chitchat":
+        kind = plan.chitchat or ""
+        return Message(
+            id=new_id("msg"),
+            conversation_id=conversation_id,
+            sender=MessageSender.assistant,
+            text=CHITCHAT_RESPONSES[kind],
+            created_at=when,
+            citations=[],
+            quick_replies=CHITCHAT_QUICK_REPLIES[kind],
+            process_trace=build_chitchat_steps(kind),
+            knowledge_graph=None,
+            is_grounded=True,
+        )
+
+    if plan.kind == "handoff":
         return Message(
             id=new_id("msg"),
             conversation_id=conversation_id,
             sender=MessageSender.assistant,
             text=(
-                "I wasn't able to find a grounded answer to that in the knowledge "
-                "base or your attached files, so I'm connecting you with a live "
-                "specialist (L2) who can help."
+                "Of course - I'm connecting you with a live specialist (L2) who can take it from here."
             ),
             created_at=when,
             citations=[],
             quick_replies=[],
-            process_trace=steps,
+            process_trace=build_process_steps(False, 0, None),
             knowledge_graph=None,
             is_grounded=False,
         )
 
+    if plan.kind == "ai":
+        generated = llm.generate_reply(text, _history(conversation_id)) if use_llm else None
+        return Message(
+            id=new_id("msg"),
+            conversation_id=conversation_id,
+            sender=MessageSender.assistant,
+            text=generated or OFFLINE_GUIDANCE,
+            created_at=when,
+            citations=[],
+            quick_replies=list(AI_QUICK_REPLIES),
+            process_trace=build_ai_steps(generated is not None),
+            knowledge_graph=None,
+            is_grounded=False,
+            is_ai_generated=True,
+        )
+
+    entry, attachment_hit = plan.entry, plan.attachment_hit
+    graph = get_graph(entry) if entry is not None else None
+    steps = build_process_steps(entry is not None, len(graph.nodes) if graph else 0, attachment_hit)
+
     citations: list[Citation] = []
     answer_parts: list[str] = []
+    ai_written = False
 
     if entry is not None:
         citations.extend(
             Citation(id=new_id("cit"), label=c["label"], document=c["document"], section=c.get("section"))
             for c in entry.citations
         )
-        answer_parts.append(entry.answer)
+        answer = entry.answer
+        if plan.kind == "kb_ai":
+            reworded = llm.generate_reply(text, _history(conversation_id), reference=entry.answer)
+            if reworded:
+                answer, ai_written = reworded, True
+        answer_parts.append(answer)
 
     if attachment_hit is not None:
         record, chunk = attachment_hit
@@ -226,6 +457,15 @@ def generate_assistant_reply(conversation_id: str, text: str, created_at: dateti
             )
         )
 
+    if plan.kind == "kb_ai":
+        for step in steps:
+            if step.agent == "Response Agent":
+                step.label = (
+                    "Reword the retrieved answer conversationally with the language model"
+                    if ai_written
+                    else "Compose a grounded answer from retrieved sources"
+                )
+
     return Message(
         id=new_id("msg"),
         conversation_id=conversation_id,
@@ -238,4 +478,5 @@ def generate_assistant_reply(conversation_id: str, text: str, created_at: dateti
         knowledge_graph=graph,
         images=[MessageImage(**img) for img in entry.images] if entry is not None else [],
         is_grounded=True,
+        is_ai_generated=ai_written,
     )

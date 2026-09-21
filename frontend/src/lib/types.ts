@@ -80,6 +80,8 @@ export interface Message {
   vote: VoteValue | null;
   vote_reason?: string | null;
   is_grounded: boolean;
+  /** True when a language model wrote (or reworded) the text. */
+  is_ai_generated?: boolean;
 }
 
 export interface Conversation {

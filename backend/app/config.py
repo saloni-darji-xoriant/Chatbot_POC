@@ -1,5 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
+# Loads backend/.env (git-ignored) so OPENAI_API_KEY / ANTHROPIC_API_KEY etc. can live there.
+load_dotenv()
+
 
 class Settings:
     """Application settings, sourced from environment variables (.env)."""

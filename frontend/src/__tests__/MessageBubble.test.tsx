@@ -54,6 +54,22 @@ describe("MessageBubble", () => {
     expect(screen.getByText("Power-cycle procedure")).toBeInTheDocument();
   });
 
+  it("labels AI-written general guidance that has no knowledge-base source", () => {
+    const ai: Message = { ...baseMessage, citations: [], is_ai_generated: true, is_grounded: false };
+    render(<MessageBubble message={ai} />);
+    expect(screen.getByText(/not from the Qcells knowledge base/i)).toBeInTheDocument();
+  });
+
+  it("labels a KB answer that was reworded by AI", () => {
+    render(<MessageBubble message={{ ...baseMessage, is_ai_generated: true }} />);
+    expect(screen.getByText(/written by AI from the sources below/i)).toBeInTheDocument();
+  });
+
+  it("shows no AI label for ordinary knowledge-base answers", () => {
+    render(<MessageBubble message={baseMessage} />);
+    expect(screen.queryByText(/AI-generated|written by AI/i)).not.toBeInTheDocument();
+  });
+
   it("does not render the Trace option (commented out)", () => {
     render(<MessageBubble message={{ ...baseMessage, process_trace: [{ label: "x", status: "done" }] }} onVote={jest.fn()} />);
     expect(screen.queryByLabelText("View developer trace")).not.toBeInTheDocument();
@@ -73,10 +89,7 @@ describe("MessageBubble", () => {
     expect(screen.queryByLabelText("Thumbs up")).not.toBeInTheDocument();
   });
 
-  // Attachment chip rendering is currently commented out in MessageBubble.tsx
-  // (UI-only — the data/props are unchanged). Un-skip alongside uncommenting
-  // that JSX.
-  it.skip("shows an attachment chip on a user message that has one", () => {
+  it("shows an attachment chip on a user message that has one", () => {
     const userMessage: Message = {
       ...baseMessage,
       sender: "user",

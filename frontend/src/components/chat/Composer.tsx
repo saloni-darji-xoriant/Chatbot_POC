@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 
 import type { AttachmentSummary } from "@/lib/types";
-// import { AttachmentChip } from "./AttachmentChip"; // unused while the attachment UI below is commented out
+import { AttachmentChip } from "./AttachmentChip";
 
 interface ComposerProps {
   onSend: (text: string) => void;
@@ -53,10 +53,6 @@ export function Composer({
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Attachments UI temporarily disabled for this build — the upload/
-         reference feature (backend + ChatContext) is fully intact, only the
-         composer's visible attach controls are hidden. Uncomment this block
-         and the attach button below to bring it back.
       {(attachments.length > 0 || isUploadingAttachment || attachmentError) && (
         <div className="flex flex-wrap items-center gap-2">
           {attachments.map((a) => (
@@ -73,13 +69,11 @@ export function Composer({
           )}
         </div>
       )}
-      */}
 
       <form
         onSubmit={submit}
         className="flex items-center gap-2 rounded-pill border border-border bg-surface py-1.5 pl-[18px] pr-1.5 shadow-composerFloat"
       >
-        {/* Attach button + hidden file input — see comment above.
         <input
           ref={fileInputRef}
           type="file"
@@ -99,7 +93,6 @@ export function Composer({
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
           </svg>
         </button>
-        */}
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}

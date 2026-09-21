@@ -43,7 +43,7 @@ class Store:
     def _seed(self) -> None:
         # Imported lazily to avoid a circular import (chat_pipeline imports
         # this module's `new_id` re-export via app.utils, not app.store).
-        from app.services.chat_pipeline import generate_assistant_reply
+        from app.services.chat_pipeline import generate_assistant_reply, handoff_reply
 
         installer = User(
             id="u_installer_1",
@@ -166,7 +166,11 @@ class Store:
                 text=query,
                 created_at=created,
             )
-            assistant_message = generate_assistant_reply(conv.id, query, created_at=created)
+            # Seed data must be deterministic and offline - never call a language model here.
+            if status == ConversationStatus.handoff:
+                assistant_message = handoff_reply(conv.id, created)
+            else:
+                assistant_message = generate_assistant_reply(conv.id, query, created_at=created, use_llm=False)
 
             sentiment = seed.get("sentiment")
             if sentiment is not None:

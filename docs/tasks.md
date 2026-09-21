@@ -29,7 +29,7 @@ Status: `[x]` done, `[ ]` open, `[~]` built but paused (commented out). Update t
 ## Phase 5 — Attachments
 - [x] In-memory, session-scoped upload with text extraction and caps
 - [x] Latency tests
-- [~] Attachment UI in composer and message bubble (commented out)
+- [x] Attachment UI in composer and message bubble (re-enabled 2026-09-21)
 
 ## Phase 6 — Responsive and theming
 - [x] Gradient-only theme via tokens (`data-theme`, `lib/theme.ts`)
@@ -49,6 +49,22 @@ Status: `[x]` done, `[ ]` open, `[~]` built but paused (commented out). Update t
 - [x] Backend and Jest tests; README section
 - [x] Browser verification on desktop (chat, follow-up click, export request, history sort)
 
+## Phase 8 — Attachments back, image viewer, human-like replies (2026-09-21)
+- [x] Uncomment attach button, pending chips, upload indicator and sent-message chips; un-skip their tests
+- [x] `ImageViewer`: open full-screen, zoom (buttons/keys/Ctrl+wheel/double-click), download, new tab, Esc to close
+- [x] Fix image download failing on cached `<img>` (CORS cache) with `cache: "reload"`
+- [x] `services/llm.py` (OpenAI/Anthropic via env), fallbacks, key never logged
+- [x] `plan_for` planner; open-ended questions get labelled conversational replies
+- [x] Weak KB matches reworded by the model from the entry (keeps citations, image, follow-ups)
+- [x] Handoff only on explicit request for a person; checked before retrieval
+- [x] Seed data offline (`use_llm=False`, `handoff_reply`); `tests/conftest.py` blocks real API calls
+- [x] `is_ai_generated` on `Message`; UI label; `.env.example` documents the variables
+- [x] Backend and Jest tests; browser check of attach, viewer zoom/download, AI reply (offline path)
+- [ ] Verify against a real provider key (needs `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in `backend/.env`)
+
+## Phase 9 — Design handoff (2026-09-21)
+- [x] `docs/mockup-spec.md`: tokens, components, 19 screen/state groups, sample content for generating mockups
+
 ## Open / next
 - [ ] Mobile-width browser pass for the new features (images, follow-ups, history controls)
 - [ ] Confirm `next build` in a clean state (blocked while dev server holds `.next`)
@@ -61,3 +77,5 @@ Status: `[x]` done, `[ ]` open, `[~]` built but paused (commented out). Update t
 | Date | Change |
 |---|---|
 | 2026-09-20 | Initial task list; Phase 7 recorded as done. |
+| 2026-09-21 | Phase 8 added; attachment UI marked done. |
+| 2026-09-21 | Phase 9: mockup-spec.md added. |

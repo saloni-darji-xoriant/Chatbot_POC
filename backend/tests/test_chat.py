@@ -56,14 +56,14 @@ def test_grounded_answer_flow() -> None:
     assert len(body["assistant_message"]["citations"]) > 0
 
 
-def test_unmatched_query_triggers_handoff() -> None:
+def test_explicit_human_request_triggers_handoff() -> None:
     token = _login()
     headers = {"Authorization": f"Bearer {token}"}
 
     conv = client.post("/api/chat/conversations", json={}, headers=headers).json()
     resp = client.post(
         f"/api/chat/conversations/{conv['id']}/messages",
-        json={"text": "asdkjaslkdj random nonsense unrelated to anything"},
+        json={"text": "asdkjaslkdj please connect me to a live specialist"},
         headers=headers,
     )
     assert resp.status_code == 200
